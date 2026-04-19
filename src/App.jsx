@@ -5,7 +5,8 @@ import {
 import {
   Activity, Camera, ShieldAlert, Cpu, Video, Hexagon, Zap,
   ArrowUpRight, Map, CloudRain, Wind, Radio, Globe,
-  ParkingSquare, Satellite, BarChart2, BookOpen, Settings
+  ParkingSquare, Satellite, BarChart2, BookOpen, Settings,
+  Menu, X
 } from 'lucide-react';
 
 /* ─── Research constants (Isarsoft, Dec 2025) ─── */
@@ -34,7 +35,6 @@ const genPlate = () => {
   return `${L()}${L()}${L()}-${Math.floor(1000 + Math.random() * 9000)}`;
 };
 
-/* ─── Tooltip custom component ─── */
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
@@ -53,6 +53,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 export default function App() {
   const [activeNav, setActiveNav] = useState('dashboard');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [data, setData] = useState({
     intersections: [],
     violations: [],
@@ -67,15 +68,13 @@ export default function App() {
   const [v2xLinks, setV2xLinks]   = useState(14);
   const [flowIndex, setFlowIndex] = useState(82);
   const [parking, setParking]     = useState({ total: 240, occupied: 178 });
-  const [uptime, setUptime]       = useState(0); // seconds
+  const [uptime, setUptime]       = useState(0);
 
-  /* Uptime counter */
   useEffect(() => {
     const t = setInterval(() => setUptime(s => s + 1), 1000);
     return () => clearInterval(t);
   }, []);
 
-  /* ITS metrics rotation */
   useEffect(() => {
     const t = setInterval(() => {
       setItsMode(ITS_MODES[Math.floor(Math.random() * ITS_MODES.length)]);
@@ -89,7 +88,6 @@ export default function App() {
     return () => clearInterval(t);
   }, []);
 
-  /* Data polling */
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -100,7 +98,6 @@ export default function App() {
           setData(result);
         }
       } catch {
-        /* Edge Sandbox — full ATM simulation */
         setData(prev => {
           const newInts = prev.intersections.length ? [...prev.intersections] : [
             { id:"i-1", name:"Main Station",   density:45, signal:"green", wait_time:0,  emergency_override:false, vehicle_count:54, pedestrian_count:12, mode:"ADAPTIVE" },
@@ -190,7 +187,7 @@ export default function App() {
     return () => clearInterval(iv);
   }, []);
 
-  const avgDensity = data.intersections.length
+  const avgDensityValue = data.intersections.length
     ? Math.round(data.intersections.reduce((a, b) => a + b.density, 0) / data.intersections.length)
     : 0;
 
@@ -200,6 +197,14 @@ export default function App() {
     const h = Math.floor(s/3600), m = Math.floor((s%3600)/60), ss = s%60;
     return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
   };
+
+  const navItems = [
+    { id:'dashboard', label:'Dashboard', icon:<Activity size={16}/> },
+    { id:'analytics', label:'Analytics',  icon:<BarChart2 size={16}/> },
+    { id:'surveillance', label:'Surveillance', icon:<Video size={16}/> },
+    { id:'incidents', label:'Incidents', icon:<ShieldAlert size={16}/> },
+    { id:'research', label:'Research', icon:<BookOpen size={16}/> },
+  ];
 
   return (
     <div className="site-wrapper">
@@ -211,34 +216,29 @@ export default function App() {
           <span className="nav-brand-name">RUBY TRAFFIC AI</span>
         </div>
 
-        <div className="nav-links">
-          {[
-            { id:'dashboard', label:'Dashboard', icon:<Activity size={14}/> },
-            { id:'analytics', label:'Analytics',  icon:<BarChart2 size={14}/> },
-            { id:'surveillance', label:'Surveillance', icon:<Video size={14}/> },
-            { id:'incidents', label:'Incidents', icon:<ShieldAlert size={14}/> },
-            { id:'research', label:'Research', icon:<BookOpen size={14}/> },
-          ].map(n => (
-            <div key={n.id} className={`nav-link ${activeNav===n.id?'active':''}`} onClick={()=>setActiveNav(n.id)}>
-              {n.icon} {n.label}
+        <div className={`nav-links ${isMenuOpen ? 'mobile-open' : ''}`}>
+          {navItems.map(n => (
+            <div 
+              key={n.id} 
+              className={`nav-link ${activeNav===n.id?'active':''}`} 
+              onClick={()=>{setActiveNav(n.id); setIsMenuOpen(false);}}
+            >
+              {n.icon} <span>{n.label}</span>
             </div>
           ))}
         </div>
 
         <div className="nav-right">
           <div className="nav-pill its">
-            <Radio size={11}/> {itsMode}
-          </div>
-          <div className="nav-pill">
-            <Globe size={11}/> V2X: {v2xLinks}
-          </div>
-          <div className="nav-pill">
-            <CloudRain size={11}/> {data.environment?.weather}
+            <Radio size={12}/> <span>{itsMode}</span>
           </div>
           <div className="nav-live">
             <div className="live-dot"/>
-            {data.system_status}
+            <span>{data.system_status.split('·')[0]}</span>
           </div>
+          <button className="menu-toggle" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
       </nav>
 
@@ -247,57 +247,51 @@ export default function App() {
         <div className="hero-top">
           <div className="hero-title-group">
             <div className="hero-eyebrow">
-              <Satellite size={11}/> Smart City Command Centre · Active Traffic Management
+              <Satellite size={12}/> <span>Smart City Command Centre</span>
             </div>
             <h1 className="hero-title">Ruby Traffic AI</h1>
             <p className="hero-sub">
-              Real-time edge AI platform for intelligent urban traffic management — featuring ANPR violation detection,
-              Emergency Vehicle Preemption (EVP), V2X communication, and environmental CO₂ monitoring.
+              Next-generation urban mobility platform. Real-time edge AI for congestion forecasting, 
+              ANPR violation tracking, and autonomous emergency vehicle preemption.
             </p>
             <div className="hero-badges">
-              {["React 19","Python Flask","Edge AI","V2X","ANPR","ATM","GitHub Pages"].map(b=>(
+              {["Edge AI","V2X","ANPR","ATM","Cyber-Safety"].map(b=>(
                 <span key={b} className="hero-badge">{b}</span>
               ))}
             </div>
           </div>
         </div>
 
-        {/* Hero KPI strip */}
         <div className="hero-stats">
           <div className="hero-stat">
             <div className="hero-stat-val">{(data.environment?.total_vehicles_scanned||0).toLocaleString()}</div>
-            <div className="hero-stat-label">Vehicles Scanned</div>
-            <div className="hero-stat-sub">Total tracked volume</div>
+            <div className="hero-stat-label">Total Volume</div>
+            <div className="hero-stat-sub">Tracked since boot</div>
           </div>
           <div className="hero-stat">
-            <div className="hero-stat-val purple">{avgDensity}%</div>
+            <div className="hero-stat-val purple">{avgDensityValue}%</div>
             <div className="hero-stat-label">Avg Density</div>
-            <div className="hero-stat-sub">Across {data.intersections.length||4} nodes</div>
+            <div className="hero-stat-sub">{data.intersections.length} Active Nodes</div>
           </div>
           <div className="hero-stat">
-            <div className="hero-stat-val">{data.environment?.avg_speed_kmh} <span style={{fontSize:'1rem'}}>km/h</span></div>
-            <div className="hero-stat-label">Flow Speed</div>
+            <div className="hero-stat-val">{data.environment?.avg_speed_kmh} <span style={{fontSize:'0.6em'}}>km/h</span></div>
+            <div className="hero-stat-label">Avg Speed</div>
             <div className="hero-stat-sub">Flow index: {flowIndex}%</div>
           </div>
           <div className="hero-stat">
-            <div className="hero-stat-val green">{data.environment?.co2_emissions_saved_kg} <span style={{fontSize:'1rem'}}>kg</span></div>
-            <div className="hero-stat-label">CO₂ Saved</div>
-            <div className="hero-stat-sub">Signal optimisation</div>
+            <div className="hero-stat-val green">{data.environment?.co2_emissions_saved_kg} <span style={{fontSize:'0.6em'}}>kg</span></div>
+            <div className="hero-stat-label">CO₂ Offset</div>
+            <div className="hero-stat-sub">Signal Opt.</div>
           </div>
           <div className="hero-stat">
             <div className="hero-stat-val red">{data.total_violations}</div>
             <div className="hero-stat-label">Violations</div>
-            <div className="hero-stat-sub">ANPR detections</div>
-          </div>
-          <div className="hero-stat">
-            <div className="hero-stat-val yellow">{data.alerts.length}</div>
-            <div className="hero-stat-label">Active Alerts</div>
-            <div className="hero-stat-sub">Anomaly incidents</div>
+            <div className="hero-stat-sub">ANPR Active</div>
           </div>
           <div className="hero-stat">
             <div className="hero-stat-val" style={{fontSize:'1.3rem'}}>{fmtUptime(uptime)}</div>
-            <div className="hero-stat-label">System Uptime</div>
-            <div className="hero-stat-sub">Edge sandbox runtime</div>
+            <div className="hero-stat-label">Uptime</div>
+            <div className="hero-stat-sub">System runtime</div>
           </div>
         </div>
       </section>
@@ -305,114 +299,97 @@ export default function App() {
       {/* ═══ SECTION: ANALYTICS ═══ */}
       <section className="section-wrap">
         <div className="section-heading">
-          <div className="section-heading-icon"><Activity size={16}/></div>
-          <span className="section-heading-label">Real-Time Analytics</span>
+          <div className="section-heading-icon"><Activity size={18}/></div>
+          <span className="section-heading-label">Dynamic Network Analytics</span>
           <div className="section-heading-line"/>
         </div>
 
         <div className="dashboard-grid">
-          {/* Congestion Chart */}
           <div className="glass-panel col-8">
             <div className="panel-header">
               <div className="panel-title">
                 <Activity size={18} color="var(--brand-cyan)"/>
-                Congestion Analytics
-                <span className="panel-meta">· Adaptive Signal Control (ATM)</span>
+                Congestion Forecasting
               </div>
-              <div style={{display:'flex',gap:'1rem',fontSize:'0.78rem',fontWeight:600}}>
-                <span style={{color:'var(--brand-cyan)'}}>AI PREDICTION: STABLE</span>
-                <span style={{color:'var(--brand-green)'}}>CO₂ SAVED: {data.environment?.co2_emissions_saved_kg} kg</span>
+              <div style={{display:'flex',gap:'0.8rem',fontSize:'0.75rem',fontWeight:700}}>
+                <span style={{color:'var(--brand-cyan)'}}>PREDICTIVE: STABLE</span>
+                <span style={{color:'var(--brand-green)'}}>EMISSIONS −{data.environment?.co2_emissions_saved_kg}KG</span>
               </div>
             </div>
             <div className="chart-wrapper">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={data.historical_density} margin={{top:10,right:10,left:-20,bottom:0}}>
+                <AreaChart data={data.historical_density} margin={{top:10,right:10,left:-25,bottom:0}}>
                   <defs>
-                    <linearGradient id="gradCyan" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient id="gC" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%"  stopColor="#00f0ff" stopOpacity={0.4}/>
                       <stop offset="95%" stopColor="#00f0ff" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <XAxis dataKey="time" stroke="var(--text-dim)" fontSize={11} tickLine={false} axisLine={false}/>
-                  <YAxis stroke="var(--text-dim)" fontSize={11} tickLine={false} axisLine={false} domain={[0,100]}/>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false}/>
+                  <XAxis dataKey="time" stroke="var(--text-dim)" fontSize={10} tickLine={false} axisLine={false}/>
+                  <YAxis stroke="var(--text-dim)" fontSize={10} tickLine={false} axisLine={false} domain={[0,100]}/>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false}/>
                   <Tooltip content={<CustomTooltip/>}/>
-                  <Area type="monotone" dataKey="density" stroke="var(--brand-cyan)" fill="url(#gradCyan)" strokeWidth={2.5}/>
+                  <Area type="monotone" dataKey="density" stroke="var(--brand-cyan)" fill="url(#gC)" strokeWidth={2}/>
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
 
-          {/* CCTV Panel */}
-          <div className="glass-panel col-4 accent-purple" style={{padding:'0.8rem'}}>
-            <div className="panel-header" style={{padding:'0 0.5rem 0.8rem'}}>
-              <div className="panel-title">
-                <Video size={16} color="var(--brand-purple)"/>
-                Live CCTV Feed
-              </div>
-              <span style={{fontSize:'0.7rem',color:'var(--brand-cyan)',fontWeight:600,letterSpacing:'1px'}}>AI TRACKING</span>
+          <div className="glass-panel col-4 accent-purple" style={{padding:'0.75rem'}}>
+            <div className="panel-header" style={{padding:'0 0.5rem 0.75rem'}}>
+              <div className="panel-title"><Video size={16} color="var(--brand-purple)"/> CCTV AI Feed</div>
             </div>
             <div className="cctv-container">
-              <img src="/cctv.png" className="cctv-feed" alt="Live CCTV"/>
+              <img src="/cctv.png" className="cctv-feed" alt="CCTV"/>
               <div className="cctv-overlay"/>
               <div className="cctv-scan-line"/>
-              <div className="cctv-crosshair"/>
-              <div className="cctv-rec"><div className="cctv-rec-dot"/> ● REC</div>
-              <div className="feed-container" style={{position:'absolute',bottom:0,left:0,right:0,padding:'0.6rem',maxHeight:'170px'}}>
+              <div className="cctv-rec"><div className="cctv-rec-dot"/> LIVE</div>
+              <div className="feed-container" style={{position:'absolute',bottom:0,left:0,right:0,padding:'0.5rem',maxHeight:'165px'}}>
                 {data.violations.slice(0,2).map(v=>(
-                  <div key={v.id} className="feed-item anpr" style={{background:'rgba(0,0,0,0.75)',backdropFilter:'blur(6px)',marginBottom:'0.4rem'}}>
+                  <div key={v.id} className="feed-item anpr" style={{background:'rgba(0,0,0,0.8)',backdropFilter:'blur(8px)',marginBottom:'0.4rem'}}>
                     <div className="feed-top">
-                      <span className="feed-title" style={{fontSize:'0.82rem'}}>{v.type} <span style={{color:'var(--text-muted)',fontSize:'0.7rem'}}>({v.vehicle})</span></span>
+                      <span className="feed-title">{v.type}</span>
                       <span className="feed-time">{v.time}</span>
                     </div>
                     <div className="badge-row">
                       <span className="cyber-badge badge-plate">{v.plate}</span>
-                      <span className="cyber-badge badge-conf">{v.confidence}</span>
-                      <span className="cyber-badge" style={{background:'rgba(255,42,85,0.2)',color:'var(--brand-red)',border:'1px solid var(--brand-red)'}}>{v.fine}</span>
-                      <span className="cyber-badge" style={{background:'rgba(0,255,136,0.1)',color:'var(--brand-green)'}}>{v.speed}</span>
+                      <span className="cyber-badge" style={{color:'var(--brand-red)'}}>{v.fine}</span>
+                      <span className="cyber-badge" style={{color:'var(--brand-green)'}}>{v.speed}</span>
                     </div>
                   </div>
                 ))}
-                {!data.violations.length && <div style={{textAlign:'center',color:'var(--brand-cyan)',padding:'1rem',fontSize:'0.8rem'}}>Scanning...</div>}
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ═══ SECTION: INTERSECTION NODES ═══ */}
+      {/* ═══ SECTION: INFRASTRUCTURE ═══ */}
       <section className="section-wrap">
         <div className="section-heading">
-          <div className="section-heading-icon"><Cpu size={16}/></div>
-          <span className="section-heading-label">Intersection Node Topology · EVP Control</span>
+          <div className="section-heading-icon"><Cpu size={18}/></div>
+          <span className="section-heading-label">Infrastructure Monitoring</span>
           <div className="section-heading-line"/>
         </div>
 
         <div className="dashboard-grid">
           <div className="glass-panel col-8">
             <div className="panel-header">
-              <div className="panel-title">
-                <Cpu size={18} color="var(--brand-green)"/>
-                Smart Intersection Control
-                <span className="panel-meta">· EVP + Adaptive Signals</span>
-              </div>
-              <div style={{fontSize:'0.72rem',color:'var(--text-muted)'}}>
-                {data.intersections.filter(i=>i.emergency_override).length} EVP active
-              </div>
+              <div className="panel-title"><Cpu size={18} color="var(--brand-green)"/> Node Topology</div>
             </div>
             {data.intersections.map(int=>(
               <div key={int.id} className={`intersection-item ${int.emergency_override?'override':''}`}>
                 <div style={{flex:1}}>
                   <div className="int-name">
                     {int.name}
-                    {int.emergency_override && <span className="evp-badge">EVP ACTIVE</span>}
-                    {!int.emergency_override && int.mode && <span className="int-mode-tag">[{int.mode}]</span>}
+                    {int.emergency_override && <span className="evp-badge">EVP</span>}
+                    {!int.emergency_override && <span className="int-mode-tag">[{int.mode}]</span>}
                   </div>
                   <div className="int-metrics">
-                    <span>Density <span className="int-metric-val">{int.density}%</span></span>
-                    <span>Wait <span className="int-metric-val">{int.wait_time}s</span></span>
-                    <span>Vehicles <span className="int-metric-val">{int.vehicle_count}</span></span>
-                    <span>Peds <span className="int-metric-val">{int.pedestrian_count}</span></span>
+                    <span>Density <b>{int.density}%</b></span>
+                    <span>Wait <b>{int.wait_time}s</b></span>
+                    <span>Vehicles <b>{int.vehicle_count}</b></span>
+                    <span>Peds <b>{int.pedestrian_count}</b></span>
                   </div>
                 </div>
                 <div className="traffic-signal">
@@ -422,140 +399,89 @@ export default function App() {
                 </div>
               </div>
             ))}
-            {!data.intersections.length && <div style={{textAlign:'center',color:'var(--text-muted)',padding:'2rem'}}>Awaiting edge connections...</div>}
           </div>
 
-          {/* Anomaly Incident Log */}
           <div className="glass-panel col-4 accent-red">
             <div className="panel-header">
-              <div className="panel-title">
-                <ShieldAlert size={18} color="var(--brand-red)"/>
-                Anomaly Log
-              </div>
-              <span style={{fontSize:'0.7rem',background:'rgba(255,42,85,0.15)',color:'var(--brand-red)',padding:'0.2rem 0.5rem',borderRadius:'6px',fontWeight:700}}>
-                {data.alerts.length} active
-              </span>
+              <div className="panel-title"><ShieldAlert size={18} color="var(--brand-red)"/> Anomaly Log</div>
             </div>
             <div className="feed-container">
               {data.alerts.map(a=>(
-                <div key={a.id} className={`feed-item ${a.severity==='critical'?'alert-critic':'alert-warn'}`}>
+                <div key={a.id} className="feed-item alert-critic">
                   <div className="feed-top">
-                    <span className="feed-title" style={{fontSize:'0.82rem',color:a.severity==='critical'?'var(--brand-red)':'var(--brand-yellow)'}}>
-                      {a.severity?.toUpperCase()} <span style={{color:'var(--text-muted)',fontSize:'0.7rem'}}>({a.model_conf})</span>
-                    </span>
+                    <span className="feed-title" style={{color:'var(--brand-red)'}}>{a.severity} Incident</span>
                     <span className="feed-time">{a.time}</span>
                   </div>
-                  <div className="feed-desc" style={{color:'#fff',fontWeight:500,marginBottom:'4px'}}>{a.message}</div>
-                  {a.location && <div style={{fontSize:'0.68rem',color:'var(--text-dim)',marginBottom:'4px'}}>📍 {a.location}</div>}
-                  <div className="badge-row">
-                    <span className="cyber-badge" style={{background:'rgba(0,240,255,0.08)',color:'var(--brand-cyan)',border:'1px solid rgba(0,240,255,0.2)'}}>
-                      {a.action_taken}
-                    </span>
+                  <div className="feed-desc" style={{color:'#fff',fontWeight:600}}>{a.message}</div>
+                  <div className="badge-row" style={{marginTop:'0.4rem'}}>
+                    <span className="cyber-badge badge-conf">{a.action_taken}</span>
                   </div>
                 </div>
               ))}
-              {!data.alerts.length && <div style={{textAlign:'center',color:'var(--text-muted)',padding:'2rem',fontSize:'0.85rem'}}>System Nominal</div>}
             </div>
           </div>
         </div>
       </section>
 
-      {/* ═══ SECTION: SMART CITY INTELLIGENCE ═══ */}
+      {/* ═══ SECTION: SMART CITY ═══ */}
       <section className="section-wrap">
         <div className="section-heading">
-          <div className="section-heading-icon"><Globe size={16}/></div>
-          <span className="section-heading-label">Smart City Intelligence · ITS / ATM Research Data</span>
+          <div className="section-heading-icon"><Globe size={18}/></div>
+          <span className="section-heading-label">V2X & Sustainability</span>
           <div className="section-heading-line"/>
         </div>
 
         <div className="dashboard-grid">
-          {/* Smart City Stats */}
           <div className="glass-panel col-6">
             <div className="panel-header">
-              <div className="panel-title">
-                <Globe size={18} color="var(--brand-cyan)"/>
-                ITS Performance Metrics
-              </div>
-              <span style={{fontSize:'0.68rem',color:'var(--text-dim)'}}>Source: Isarsoft Research, Dec 2025</span>
+              <div className="panel-title"><Globe size={18} color="var(--brand-cyan)"/> ITS Performance</div>
             </div>
             <div className="intel-grid">
               {[
-                { label:"EU Target",      val:"−55%",           sub:"Emission cut by 2030",     color:"var(--brand-green)" },
-                { label:"V2X Links",      val:v2xLinks,          sub:"Vehicle-to-Everything",    color:"var(--brand-cyan)" },
-                { label:"Flow Index",     val:flowIndex+"%",     sub:"Adaptive Signal Ctrl",     color:"var(--brand-cyan)" },
-                { label:"ITS Mode",       val:itsMode.split(" ")[0], sub:itsMode.split(" ").slice(1).join(" ")||"Active", color:"#c084fc" },
-                { label:"CO₂ Saved",     val:(data.environment?.co2_emissions_saved_kg||0)+" kg", sub:"Signal optimisation", color:"var(--brand-green)" },
-                { label:"Parking",        val:parkingPct+"%",    sub:`${parking.total-parking.occupied} spots free`, color: parking.total-parking.occupied < 30 ? "var(--brand-red)" : "var(--brand-yellow)" },
+                { l:"EU Goal", v:"−55%", c:"var(--brand-green)" },
+                { l:"V2X Links", v:v2xLinks, c:"var(--brand-cyan)" },
+                { l:"Flow Index", v:flowIndex+"%", c:"var(--brand-cyan)" },
+                { l:"CO₂ Savings", v:data.environment?.co2_emissions_saved_kg+"kg", c:"var(--brand-green)" },
+                { l:"ITS Phase", v:itsMode.split(" ")[0], c:"#c084fc" },
+                { l:"Parking", v:parkingPct+"%", c:"var(--brand-yellow)" },
               ].map((s,i)=>(
-                <div key={i} className="intel-stat" style={{'--intel-color':s.color}}>
-                  <div className="intel-val" style={{color:s.color}}>{s.val}</div>
-                  <div className="intel-label">{s.label}</div>
-                  <div className="intel-sub">{s.sub}</div>
+                <div key={i} className="intel-stat" style={{'--intel-color':s.c}}>
+                  <div className="intel-val" style={{color:s.c}}>{s.v}</div>
+                  <div className="intel-label" style={{fontSize:'0.6rem'}}>{s.l}</div>
                 </div>
               ))}
             </div>
             <div className="parking-bar-wrap">
-              <div className="parking-bar-header">
-                <span><ParkingSquare size={12} style={{display:'inline',marginRight:'4px'}}/>Smart Parking Occupancy</span>
-                <span style={{color:parking.total-parking.occupied<30?'var(--brand-red)':'var(--brand-green)',fontWeight:700}}>
-                  {parking.total-parking.occupied} / {parking.total} available
-                </span>
-              </div>
-              <div className="parking-bar-bg">
-                <div className="parking-bar-fill" style={{width:parkingPct+'%'}}/>
-              </div>
+              <div className="parking-bar-bg"><div className="parking-bar-fill" style={{width:parkingPct+'%'}}/></div>
             </div>
           </div>
 
-          {/* ANPR Violation Log */}
           <div className="glass-panel col-6 accent-purple">
             <div className="panel-header">
-              <div className="panel-title">
-                <Camera size={18} color="var(--brand-purple)"/>
-                ANPR Violation Log
-                <span className="panel-meta">· 6 detection types</span>
-              </div>
-              <span style={{fontSize:'0.7rem',background:'rgba(157,78,255,0.15)',color:'var(--brand-purple)',padding:'0.2rem 0.5rem',borderRadius:'6px',fontWeight:700}}>
-                {data.violations.length} recent
-              </span>
+              <div className="panel-title"><Camera size={18} color="var(--brand-purple)"/> Violation History</div>
             </div>
-            <div style={{overflowY:'auto',maxHeight:'240px'}}>
+            <div style={{overflowY:'auto',maxHeight:'210px'}}>
               {data.violations.map(v=>(
                 <div key={v.id} className="violation-row">
-                  <div className="violation-dot" style={{
-                    background: v.type==='Wrong Way Driver'?'var(--brand-red)':v.type==='Red Light Jump'?'var(--brand-yellow)':v.type==='Jaywalking'?'var(--brand-purple)':'var(--brand-cyan)',
-                    color: v.type==='Wrong Way Driver'?'var(--brand-red)':v.type==='Red Light Jump'?'var(--brand-yellow)':v.type==='Jaywalking'?'var(--brand-purple)':'var(--brand-cyan)',
-                  }}/>
+                  <div className="violation-dot" style={{background:'var(--brand-cyan)', color:'var(--brand-cyan)'}}/>
                   <div style={{flex:1}}>
-                    <div style={{fontWeight:600,fontSize:'0.82rem'}}>{v.type}</div>
-                    <div style={{color:'var(--text-muted)',fontSize:'0.7rem'}}>{v.plate} · {v.vehicle} · {v.location||'—'}</div>
+                    <div style={{fontWeight:600}}>{v.type}</div>
+                    <div style={{color:'var(--text-muted)',fontSize:'0.7rem'}}>{v.plate} · {v.location}</div>
                   </div>
-                  <div style={{textAlign:'right',flexShrink:0}}>
-                    <div style={{color:'var(--brand-red)',fontWeight:700,fontSize:'0.85rem'}}>{v.fine}</div>
-                    <div style={{color:'var(--text-dim)',fontSize:'0.68rem'}}>{v.speed} · {v.confidence}</div>
+                  <div style={{textAlign:'right'}}>
+                    <div style={{color:'var(--brand-red)',fontWeight:700}}>{v.fine}</div>
+                    <div style={{color:'var(--text-dim)',fontSize:'0.6rem'}}>{v.speed}</div>
                   </div>
                 </div>
               ))}
-              {!data.violations.length && (
-                <div style={{textAlign:'center',color:'var(--brand-cyan)',padding:'2.5rem 0',fontSize:'0.85rem'}}>
-                  Scanning for violations...
-                </div>
-              )}
             </div>
           </div>
         </div>
       </section>
 
-      {/* ═══ FOOTER ═══ */}
       <footer className="site-footer">
-        <div className="footer-brand"><span>RUBY</span> TRAFFIC AI · Smart City Command Centre · 2026</div>
-        <div style={{display:'flex',gap:'1rem',alignItems:'center'}}>
-          <span style={{color:'var(--text-dim)'}}>Source: Isarsoft Research, Dec 2025</span>
-          <span>·</span>
-          <span style={{color:'var(--brand-cyan)'}}>github.com/Paradoxai77/Traffic-System</span>
-          <span>·</span>
-          <span>Uptime: {fmtUptime(uptime)}</span>
-        </div>
+        <div className="footer-brand"><span>RUBY</span> TRAFFIC AI · COMMAND CENTRE · 2026</div>
+        <div>Uptime: {fmtUptime(uptime)}</div>
       </footer>
 
     </div>
