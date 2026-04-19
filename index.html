@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>traffic-new</title>
     <script>
-      if (window.location.hostname.includes("github.io")) {
+      if (window.location.hostname.includes("github.io") && !window.location.pathname.includes("/dist/")) {
         window.location.replace("/Traffic-System/dist/index.html");
       }
     </script>
