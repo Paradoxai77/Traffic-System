@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ruby Traffic AI – Project Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  /* ─── Base ─────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cyan:   #00FFEA;
+    --purple: #8B5CF6;
+    --red:    #FF2A55;
+    --gold:   #FFD700;
+    --green:  #00FF88;
+    --bg:     #08090F;
+    --panel:  #0D1117;
+    --border: rgba(0,255,234,0.18);
+    --text:   #E2E8F0;
+    --muted:  #64748B;
+  }
+
+  html { font-size: 15px; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  /* ─── Print tweaks ──────────────────────── */
+  @media print {
+    body { background: #fff !important; color: #111 !important; }
+    .cover { background: linear-gradient(135deg,#0a0a1a,#1a0a2e) !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .section { page-break-inside: avoid; }
+    .page-break { page-break-before: always; }
+    .no-print { display: none !important; }
+  }
+
+  /* ─── Print Button ──────────────────────── */
+  .print-btn {
+    position: fixed; top: 1.5rem; right: 1.5rem; z-index: 999;
+    background: linear-gradient(135deg, var(--cyan), var(--purple));
+    color: #000; font-family: 'Orbitron', sans-serif; font-size: 0.75rem;
+    font-weight: 700; letter-spacing: 2px; padding: 0.75rem 1.5rem;
+    border: none; border-radius: 50px; cursor: pointer;
+    box-shadow: 0 0 30px rgba(0,255,234,0.4);
+    transition: transform .2s, box-shadow .2s;
+  }
+  .print-btn:hover { transform: scale(1.05); box-shadow: 0 0 50px rgba(0,255,234,0.7); }
+
+  /* ─── Cover Page ────────────────────────── */
+  .cover {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #050a12 0%, #0d0a1f 40%, #0a1220 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 4rem 2rem; position: relative; overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% 0%, rgba(0,255,234,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 80%, rgba(139,92,246,0.08) 0%, transparent 60%);
+  }
+  .cover-grid {
+    position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(0,255,234,0.04) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(0,255,234,0.04) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+  .cover-badge {
+    font-family: 'Orbitron', sans-serif; font-size: 0.7rem; letter-spacing: 4px;
+    color: var(--cyan); border: 1px solid var(--border); padding: 0.4rem 1.2rem;
+    border-radius: 50px; margin-bottom: 2rem; position: relative;
+    background: rgba(0,255,234,0.05);
+  }
+  .cover-title {
+    font-family: 'Orbitron', sans-serif; font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 900; line-height: 1.1; position: relative;
+  }
+  .cover-title span { color: var(--cyan); }
+  .cover-tagline {
+    font-size: 1.1rem; color: var(--muted); max-width: 600px; margin: 1.5rem auto;
+    font-weight: 300; position: relative;
+  }
+  .cover-meta {
+    display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center;
+    margin-top: 3rem; position: relative;
+  }
+  .meta-pill {
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+    border-radius: 50px; padding: 0.5rem 1.2rem; font-size: 0.8rem;
+    color: var(--cyan); font-family: 'Orbitron', sans-serif; letter-spacing: 1px;
+  }
+  .cover-line {
+    width: 120px; height: 2px; margin: 2rem auto;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    position: relative;
+  }
+
+  /* ─── Content Wrapper ───────────────────── */
+  .content { max-width: 1000px; margin: 0 auto; padding: 4rem 2rem; }
+
+  /* ─── Section Titles ────────────────────── */
+  .section { margin-bottom: 4rem; }
+  .section-label {
+    font-family: 'Orbitron', sans-serif; font-size: 0.65rem;
+    letter-spacing: 4px; color: var(--cyan); margin-bottom: 0.5rem;
+  }
+  .section-title {
+    font-size: 1.9rem; font-weight: 700; margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;
+  }
+  .section-title span { color: var(--cyan); }
+
+  /* ─── Cards ─────────────────────────────── */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 14px; padding: 1.5rem; position: relative; overflow: hidden;
+  }
+  .card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  }
+  .card-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+  .card-title { font-weight: 700; margin-bottom: 0.4rem; font-size: 1rem; }
+  .card-desc { color: var(--muted); font-size: 0.85rem; line-height: 1.6; }
+
+  .card.purple::before { background: linear-gradient(90deg,transparent,var(--purple),transparent); }
+  .card.red::before    { background: linear-gradient(90deg,transparent,var(--red),transparent); }
+  .card.gold::before   { background: linear-gradient(90deg,transparent,var(--gold),transparent); }
+  .card.green::before  { background: linear-gradient(90deg,transparent,var(--green),transparent); }
+
+  /* ─── KPI Strip ─────────────────────────── */
+  .kpi-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
+  .kpi {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+    padding: 1.5rem 1rem; text-align: center;
+  }
+  .kpi-val { font-family: 'Orbitron', sans-serif; font-size: 2rem; font-weight: 700; color: var(--cyan); }
+  .kpi-label { font-size: 0.78rem; color: var(--muted); margin-top: 0.3rem; letter-spacing: 1px; }
+
+  /* ─── Tech Table ────────────────────────── */
+  table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; font-size: 0.9rem; }
+  thead th {
+    text-align: left; padding: 0.75rem 1rem;
+    background: rgba(0,255,234,0.06); color: var(--cyan);
+    font-family: 'Orbitron', sans-serif; font-size: 0.7rem; letter-spacing: 2px;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); }
+  tbody tr:hover { background: rgba(0,255,234,0.03); }
+  td { padding: 0.85rem 1rem; vertical-align: top; }
+  td:first-child { font-weight: 600; color: var(--text); }
+  td:not(:first-child) { color: var(--muted); }
+  .tag {
+    display: inline-block; padding: 0.25rem 0.7rem; border-radius: 50px;
+    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.5px;
+    background: rgba(0,255,234,0.1); color: var(--cyan);
+    border: 1px solid rgba(0,255,234,0.25); margin: 2px;
+  }
+  .tag.purple { background: rgba(139,92,246,0.1); color: var(--purple); border-color: rgba(139,92,246,0.25); }
+  .tag.red    { background: rgba(255,42,85,0.1);   color: var(--red);    border-color: rgba(255,42,85,0.25); }
+  .tag.green  { background: rgba(0,255,136,0.1);   color: var(--green);  border-color: rgba(0,255,136,0.25); }
+  .tag.gold   { background: rgba(255,215,0,0.1);   color: var(--gold);   border-color: rgba(255,215,0,0.25); }
+
+  /* ─── Architecture diagram ───────────────── */
+  .arch-box {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+    padding: 2rem; font-family: 'Orbitron', monospace; font-size: 0.72rem;
+    line-height: 1.9; overflow-x: auto; color: var(--cyan); letter-spacing: 1px;
+    margin-top: 1.5rem; white-space: pre;
+  }
+
+  /* ─── Timeline ───────────────────────────── */
+  .timeline { margin-top: 1.5rem; position: relative; padding-left: 2rem; }
+  .timeline::before {
+    content: ''; position: absolute; left: 0.45rem; top: 0; bottom: 0;
+    width: 2px; background: linear-gradient(to bottom, var(--cyan), var(--purple));
+  }
+  .tl-item { position: relative; margin-bottom: 2rem; padding-left: 1.5rem; }
+  .tl-dot {
+    position: absolute; left: -1.7rem; top: 0.3rem; width: 12px; height: 12px;
+    border-radius: 50%; background: var(--cyan); border: 2px solid var(--panel);
+    box-shadow: 0 0 8px var(--cyan);
+  }
+  .tl-dot.purple { background: var(--purple); box-shadow: 0 0 8px var(--purple); }
+  .tl-dot.red    { background: var(--red);    box-shadow: 0 0 8px var(--red); }
+  .tl-step { font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 2px; color: var(--muted); }
+  .tl-title { font-weight: 700; margin: 0.2rem 0; }
+  .tl-desc { color: var(--muted); font-size: 0.85rem; }
+
+  /* ─── API Routes ─────────────────────────── */
+  .route-list { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+  .route-item {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1rem 1.25rem; display: flex; align-items: flex-start; gap: 1rem; flex-wrap: wrap;
+  }
+  .method {
+    font-family: 'Orbitron', sans-serif; font-size: 0.7rem; font-weight: 700;
+    padding: 0.3rem 0.7rem; border-radius: 6px; letter-spacing: 1px; white-space: nowrap;
+  }
+  .method.get  { background: rgba(0,255,136,0.15); color: var(--green); border: 1px solid rgba(0,255,136,0.3); }
+  .method.post { background: rgba(0,150,255,0.15); color: #60BFFF;       border: 1px solid rgba(0,150,255,0.3); }
+  .route-path { font-weight: 700; font-family: monospace; font-size: 0.95rem; flex: 1; }
+  .route-desc { color: var(--muted); font-size: 0.82rem; width: 100%; margin-top: 0.2rem; }
+
+  /* ─── Feature list ───────────────────────── */
+  .feature-list { list-style: none; margin-top: 1rem; }
+  .feature-list li {
+    padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+    display: flex; align-items: flex-start; gap: 0.75rem; font-size: 0.9rem;
+  }
+  .feature-list li::before { content: '▸'; color: var(--cyan); flex-shrink: 0; margin-top: 2px; }
+
+  /* ─── Quote/highlight box ────────────────── */
+  .highlight {
+    border-left: 3px solid var(--cyan); background: rgba(0,255,234,0.04);
+    border-radius: 0 12px 12px 0; padding: 1rem 1.5rem; margin: 1.5rem 0;
+    font-size: 0.9rem; color: var(--muted);
+  }
+  .highlight strong { color: var(--text); }
+
+  /* ─── Footer ─────────────────────────────── */
+  .footer {
+    background: var(--panel); border-top: 1px solid var(--border);
+    text-align: center; padding: 3rem 2rem;
+    font-family: 'Orbitron', sans-serif; font-size: 0.7rem; letter-spacing: 2px;
+    color: var(--muted);
+  }
+  .footer span { color: var(--cyan); }
+
+  /* ─── Separator ──────────────────────────── */
+  .sep { height: 1px; background: linear-gradient(90deg,transparent,var(--border),transparent); margin: 3rem 0; }
+
+  /* ─── Research / Isarsoft sections ──────── */
+  .source-cite {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: rgba(139,92,246,0.08); border: 1px solid rgba(139,92,246,0.3);
+    border-radius: 50px; padding: 0.35rem 1rem; font-size: 0.75rem;
+    color: var(--purple); margin-bottom: 1.5rem; font-family: 'Orbitron', sans-serif; letter-spacing: 1px;
+  }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem; }
+  @media(max-width:600px){ .two-col { grid-template-columns: 1fr; } }
+  .research-stat-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap: 1rem; margin-top: 1.5rem; }
+  .r-stat {
+    background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(0,255,234,0.04));
+    border: 1px solid rgba(139,92,246,0.2); border-radius: 14px; padding: 1.2rem; text-align: center;
+  }
+  .r-stat-val { font-family: 'Orbitron', sans-serif; font-size: 1.6rem; font-weight: 700; color: var(--purple); }
+  .r-stat-label { font-size: 0.72rem; color: var(--muted); margin-top: 0.3rem; }
+  .use-case-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap: 1rem; margin-top: 1.5rem; }
+  .uc-card {
+    background: var(--panel); border: 1px solid rgba(139,92,246,0.2); border-radius: 14px;
+    padding: 1.4rem; position: relative; overflow: hidden;
+  }
+  .uc-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--purple), transparent);
+  }
+  .uc-num { font-family: 'Orbitron', sans-serif; font-size: 0.6rem; letter-spacing: 3px; color: var(--purple); margin-bottom: 0.4rem; }
+  .uc-title { font-weight: 700; margin-bottom: 0.5rem; }
+  .uc-desc { color: var(--muted); font-size: 0.83rem; line-height: 1.6; }
+  .uc-example {
+    margin-top: 0.75rem; padding: 0.6rem 0.9rem;
+    background: rgba(139,92,246,0.06); border-left: 2px solid var(--purple);
+    border-radius: 0 8px 8px 0; font-size: 0.78rem; color: var(--muted);
+  }
+  .benefit-item {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.2rem 1.4rem; margin-bottom: 0.9rem; display: flex; gap: 1rem; align-items: flex-start;
+  }
+  .benefit-num { font-family: 'Orbitron', sans-serif; font-size: 1.2rem; font-weight: 900; color: var(--cyan); flex-shrink: 0; min-width: 2rem; }
+  .benefit-title { font-weight: 700; margin-bottom: 0.3rem; }
+  .benefit-desc { color: var(--muted); font-size: 0.85rem; }
+  .challenge-item {
+    background: var(--panel); border: 1px solid rgba(255,42,85,0.2); border-radius: 12px;
+    padding: 1.2rem 1.4rem; margin-bottom: 0.9rem; display: flex; gap: 1rem; align-items: flex-start;
+  }
+  .challenge-num { font-family: 'Orbitron', sans-serif; font-size: 1.2rem; font-weight: 900; color: var(--red); flex-shrink: 0; min-width: 2rem; }
+  .future-card {
+    background: linear-gradient(135deg, rgba(0,255,234,0.04), rgba(139,92,246,0.04));
+    border: 1px solid var(--border); border-radius: 14px; padding: 1.5rem; margin-bottom: 1rem;
+  }
+  .future-card-title { font-weight: 700; color: var(--cyan); margin-bottom: 0.5rem; }
+  .future-card-desc { color: var(--muted); font-size: 0.85rem; line-height: 1.7; }
+</style>
+</head>
+<body>
+
+<!-- Print Button -->
+<button class="print-btn no-print" onclick="window.print()">⬇ SAVE AS PDF</button>
+
+<!-- ═══════════════════════════════════════════
+     COVER PAGE
+═══════════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-grid"></div>
+  <div class="cover-badge">PROJECT REPORT · 2026</div>
+  <h1 class="cover-title">RUBY<br/><span>TRAFFIC AI</span></h1>
+  <p class="cover-tagline">
+    A next-generation Smart City Command Centre — powered by Edge AI, real-time analytics,
+    automated ANPR violation detection, and emergency vehicle preemption.
+  </p>
+  <div class="cover-line"></div>
+  <div class="cover-meta">
+    <div class="meta-pill">⚡ React 19 + Vite 8</div>
+    <div class="meta-pill">🐍 Python Flask</div>
+    <div class="meta-pill">🤖 Edge AI Simulation</div>
+    <div class="meta-pill">🌐 GitHub Pages</div>
+    <div class="meta-pill">📊 Real-Time Analytics</div>
+  </div>
+  <p style="margin-top:3rem;color:var(--muted);font-size:0.8rem;position:relative;">
+    github.com/Paradoxai77/Traffic-System
+  </p>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MAIN CONTENT
+═══════════════════════════════════════════ -->
+<div class="content">
+
+  <!-- ── 1. Project Overview ────────────────── -->
+  <div class="section">
+    <p class="section-label">01 · OVERVIEW</p>
+    <h2 class="section-title">What is <span>Ruby Traffic AI</span>?</h2>
+    <p>
+      Ruby Traffic AI is a <strong>full-stack smart city traffic management platform</strong> built for
+      real-world hackathon demonstration. It combines a cyberpunk-themed React dashboard with a Python
+      Flask REST API and an independent Edge AI simulation engine to deliver live, actionable traffic
+      intelligence — all from a single browser window.
+    </p>
+
+    <div class="highlight">
+      <strong>Core Idea:</strong> Instead of passive CCTV monitoring, Ruby Traffic AI actively analyses
+      traffic density, detects violations, predicts congestion, and triggers emergency overrides —
+      all autonomously and in real time.
+    </div>
+
+    <div class="kpi-strip">
+      <div class="kpi">
+        <div class="kpi-val">4</div>
+        <div class="kpi-label">Smart Intersections</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-val">2s</div>
+        <div class="kpi-label">Polling Interval</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-val">98%</div>
+        <div class="kpi-label">ANPR Confidence</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-val">3</div>
+        <div class="kpi-label">Microservices</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-val">5s</div>
+        <div class="kpi-label">Edge Sim Cycle</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-val">100%</div>
+        <div class="kpi-label">Offline Capable</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- ── 2. Key Features ───────────────────── -->
+  <div class="section page-break">
+    <p class="section-label">02 · FEATURES</p>
+    <h2 class="section-title">Core <span>Capabilities</span></h2>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🧠</div>
+        <div class="card-title">Edge AI Intelligence</div>
+        <div class="card-desc">Real-time vehicle density prediction using probabilistic simulation. AI confidence scoring per event. Automated anomaly escalation with model confidence displayed per alert.</div>
+      </div>
+      <div class="card purple">
+        <div class="card-icon">📷</div>
+        <div class="card-title">ANPR Surveillance</div>
+        <div class="card-desc">Automatic Number Plate Recognition detects over-speeding, red light jumps, wrong-way drivers. Generates fine amounts and logs vehicle class &amp; speed per violation.</div>
+      </div>
+      <div class="card red">
+        <div class="card-icon">🚨</div>
+        <div class="card-title">Emergency Vehicle Preemption</div>
+        <div class="card-desc">EVP system grants instant green signal override to ambulances/fire trucks. 3% per-cycle probability trigger. Override clears automatically once emergency passes.</div>
+      </div>
+      <div class="card green">
+        <div class="card-icon">🌿</div>
+        <div class="card-title">Environmental Monitoring</div>
+        <div class="card-desc">Tracks CO₂ emissions saved (kg) in real time, average traffic flow speed (km/h), total vehicles scanned, and live weather conditions affecting flow.</div>
+      </div>
+      <div class="card gold">
+        <div class="card-icon">📊</div>
+        <div class="card-title">Real-Time Analytics</div>
+        <div class="card-desc">20-point rolling area chart shows density history. Recharts library renders smooth animations. Chart updates every 2 seconds with live backend or edge simulation data.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔁</div>
+        <div class="card-title">Offline-First Design</div>
+        <div class="card-desc">No backend? No problem. The frontend automatically falls back to a built-in Edge Sandbox simulation — demo-ready anywhere, even without internet.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- ── 3. Architecture ───────────────────── -->
+  <div class="section page-break">
+    <p class="section-label">03 · ARCHITECTURE</p>
+    <h2 class="section-title">System <span>Architecture</span></h2>
+    <p>
+      The platform is composed of three independently runnable microservices that communicate via REST.
+      The frontend can operate in full offline mode using the built-in Edge Sandbox fallback.
+    </p>
+
+    <div class="arch-box">
+┌──────────────────────────────────────────────────────────────┐
+│                     RUBY TRAFFIC AI                          │
+│                                                              │
+│  ┌────────────────┐    REST     ┌────────────────┐           │
+│  │  React 19 +    │ ◄────────► │  Python Flask  │           │
+│  │  Vite 8        │  /api/*    │  Backend       │           │
+│  │  (Port 5173)   │            │  (Port 5000)   │           │
+│  └────────┬───────┘            └───────┬────────┘           │
+│           │                           │ POST /api/           │
+│           │  (Fallback if offline)     │ traffic_update       │
+│           │                    ┌──────▼────────┐             │
+│           └────────────────────┤  Edge AI Sim  │             │
+│                                │  sim.py       │             │
+│                                │  (5s cycle)   │             │
+│                                └───────────────┘             │
+│                                                              │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐    │
+│  │ Recharts │  │  Lucide  │  │ Vanilla  │  │ GitHub   │    │
+│  │ Charts   │  │  Icons   │  │ CSS/Glass│  │ Actions  │    │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘    │
+└──────────────────────────────────────────────────────────────┘</div>
+
+    <div class="card-grid" style="margin-top:1.5rem;">
+      <div class="card">
+        <div class="card-title">🖥 Frontend</div>
+        <div class="card-desc">React 19 + Vite 8 SPA. Polls <code>/api/dashboard_data</code> every 2 seconds. Falls back to built-in Edge Sandbox on API failure.</div>
+      </div>
+      <div class="card purple">
+        <div class="card-title">🐍 Backend (Flask)</div>
+        <div class="card-desc">Stores global traffic state in memory. Exposes GET and POST REST endpoints. Accepts simulation payloads from the Edge AI engine.</div>
+      </div>
+      <div class="card green">
+        <div class="card-title">⚡ Edge AI Sim</div>
+        <div class="card-desc">Python script running independently on a 5-second loop. Generates realistic density, violations, and alerts; pushes to Flask via POST.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- ── 4. Tech Stack ─────────────────────── -->
+  <div class="section page-break">
+    <p class="section-label">04 · TECHNOLOGY</p>
+    <h2 class="section-title">Tech <span>Stack</span></h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Layer</th>
+          <th>Technology</th>
+          <th>Purpose</th>
+          <th>Version</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>UI Framework</td>
+          <td><span class="tag">React</span></td>
+          <td>Component-based dashboard UI with live state management</td>
+          <td>v19.2.4</td>
+        </tr>
+        <tr>
+          <td>Build Tool</td>
+          <td><span class="tag">Vite</span></td>
+          <td>Ultra-fast HMR dev server and production bundler</td>
+          <td>v8.0.4</td>
+        </tr>
+        <tr>
+          <td>Charts</td>
+          <td><span class="tag">Recharts</span></td>
+          <td>Real-time animated area charts for congestion history</td>
+          <td>v3.8.1</td>
+        </tr>
+        <tr>
+          <td>Icons</td>
+          <td><span class="tag">Lucide React</span></td>
+          <td>Cyberpunk-style icon set (Activity, Camera, ShieldAlert…)</td>
+          <td>v1.8.0</td>
+        </tr>
+        <tr>
+          <td>Styling</td>
+          <td><span class="tag">Vanilla CSS</span></td>
+          <td>Glassmorphism panels, CSS variables, micro-animations</td>
+          <td>–</td>
+        </tr>
+        <tr>
+          <td>Backend</td>
+          <td><span class="tag purple">Python Flask</span></td>
+          <td>REST API server storing &amp; broadcasting traffic state</td>
+          <td>3.x</td>
+        </tr>
+        <tr>
+          <td>CORS</td>
+          <td><span class="tag purple">flask-cors</span></td>
+          <td>Allows cross-origin requests from the Vite dev server</td>
+          <td>–</td>
+        </tr>
+        <tr>
+          <td>Edge Sim</td>
+          <td><span class="tag green">Python + requests</span></td>
+          <td>Autonomous AI simulation engine pushing live data</td>
+          <td>3.10+</td>
+        </tr>
+        <tr>
+          <td>Deployment</td>
+          <td><span class="tag gold">GitHub Pages</span></td>
+          <td>Static frontend hosting via automated CI/CD</td>
+          <td>–</td>
+        </tr>
+        <tr>
+          <td>CI/CD</td>
+          <td><span class="tag gold">GitHub Actions</span></td>
+          <td>Auto-deploy on every push to main branch</td>
+          <td>–</td>
+        </tr>
+        <tr>
+          <td>Package Manager</td>
+          <td><span class="tag">npm</span></td>
+          <td>Dependency management and script runner</td>
+          <td>9+</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- ── 5. Dashboard Panels ───────────────── -->
+  <div class="section page-break">
+    <p class="section-label">05 · DASHBOARD</p>
+    <h2 class="section-title">Dashboard <span>Panels</span></h2>
+    <p>The dashboard is a single-page application with five key panels arranged in a responsive grid:</p>
+
+    <table style="margin-top:1.5rem;">
+      <thead>
+        <tr>
+          <th>Panel</th>
+          <th>Content</th>
+          <th>Data Source</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>📊 KPI Cards (×4)</td>
+          <td>Total vehicles scanned, avg flow speed (km/h), total violations logged, critical alert count</td>
+          <td>Live API / Edge Sandbox</td>
+        </tr>
+        <tr>
+          <td>📈 Congestion Analytics</td>
+          <td>Rolling 20-point area chart of intersection density %, CO₂ saved (kg), AI prediction status</td>
+          <td>historical_density array</td>
+        </tr>
+        <tr>
+          <td>📷 CCTV AI Feed</td>
+          <td>Live CCTV image with AI tracking overlay, last 2 ANPR violations with plate, speed, fine, confidence</td>
+          <td>violations array</td>
+        </tr>
+        <tr>
+          <td>🔵 Node Topology</td>
+          <td>Per-intersection: density %, wait time (s), vehicle count, pedestrian count, traffic signal state, EVP badge</td>
+          <td>intersections array</td>
+        </tr>
+        <tr>
+          <td>🚨 Anomaly Incident Log</td>
+          <td>Severity level, AI model confidence, incident message, location, time, automated action taken</td>
+          <td>alerts array</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- ── 6. API Reference ──────────────────── -->
+  <div class="section page-break">
+    <p class="section-label">06 · API REFERENCE</p>
+    <h2 class="section-title">REST <span>Endpoints</span></h2>
+    <p>The Flask backend runs on <strong>http://localhost:5000</strong> and exposes two endpoints:</p>
+
+    <div class="route-list">
+      <div class="route-item">
+        <span class="method get">GET</span>
+        <div>
+          <div class="route-path">/api/dashboard_data</div>
+          <div class="route-desc">
+            Returns the full traffic state as JSON — intersections, violations, alerts, historical density, system status, environment stats, and total violations count. Polled by the React frontend every 2 seconds.
+          </div>
+        </div>
+      </div>
+      <div class="route-item">
+        <span class="method post">POST</span>
+        <div>
+          <div class="route-path">/api/traffic_update</div>
+          <div class="route-desc">
+            Accepts a JSON payload from the Edge AI simulation engine. Supports partial updates — can include any combination of: <code>intersections</code>, <code>violation</code>, <code>alert</code>, <code>historical_density</code>, <code>environment</code>. Violations are capped at 10 entries; alerts at 5.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight" style="margin-top:1.5rem;">
+      <strong>Sample violation payload fields:</strong> id, type (Red Light Jump / Over-speeding / Wrong Way / Jaywalking), plate, location, time, confidence (%), speed (km/h), vehicle class, fine ($)
+    </div>
+    <div class="highlight">
+      <strong>Sample alert payload fields:</strong> id, severity (critical / high / medium), message, location, time, action_taken, model_conf (%)
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- ── 7. Edge AI Engine ─────────────────── -->
+  <div class="section page-break">
+    <p class="section-label">07 · EDGE AI ENGINE</p>
+    <h2 class="section-title">Edge AI <span>Simulation</span></h2>
+    <p>
+      The Edge AI Engine (<code>edge/sim.py</code>) is a standalone Python script that mimics
+      what a real edge compute node would do — analysing camera feeds and sensor data locally before
+      sending aggregated results to the central platform.
+    </p>
+
+    <div class="card-grid" style="margin-top:1.5rem;">
+      <div class="card">
+        <div class="card-title">🔄 5-Second Cycle</div>
+        <div class="card-desc">Every 5 seconds, all 4 intersection densities are updated via a random walk (±8%). Weather events increase congestion by +2 to +5.</div>
+      </div>
+      <div class="card purple">
+        <div class="card-title">🌦 Weather Engine</div>
+        <div class="card-desc">5% per-cycle chance of weather change (CLEAR / RAIN / FOG). RAIN & FOG reduce base speed from 45 to 25 km/h and increase density.</div>
+      </div>
+      <div class="card red">
+        <div class="card-title">🚨 EVP Logic</div>
+        <div class="card-desc">3% per-cycle chance of emergency vehicle override. Signal instantly goes green, wait time resets. 30% chance to clear each subsequent cycle.</div>
+      </div>
+      <div class="card green">
+        <div class="card-title">📸 ANPR Engine</div>
+        <div class="card-desc">30% per-cycle chance of violation event. Randomly selects type, vehicle class, speed, plate. Calculates fine: Red Light $250, Wrong Way $500, Over-speeding $150+, Jaywalking $50.</div>
+      </div>
+      <div class="card gold">
+        <div class="card-title">🔔 Alert Engine</div>
+        <div class="card-desc">15% per-cycle chance of hazard alert. Four hazard types: Heavy Collision, Stranded Vehicle, Road Debris, Wrong Way Driver. Each has a predefined automated response action.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">🌿 CO₂ Tracking</div>
+        <div class="card-desc">Each successful smart signal switch from red → green (density relief or wait > 60s) saves 1–4 kg of CO₂ and adds to the cumulative counter.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- ── 8. Setup & Running ────────────────── -->
+  <div class="section page-break">
+    <p class="section-label">08 · SETUP</p>
+    <h2 class="section-title">How to <span>Run</span></h2>
+
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-step">STEP 1</div>
+        <div class="tl-title">Clone the Repository</div>
+        <div class="tl-desc"><code>git clone https://github.com/Paradoxai77/Traffic-System.git</code><br/>then <code>cd Traffic-System</code></div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-step">STEP 2</div>
+        <div class="tl-title">Install Frontend Dependencies</div>
+        <div class="tl-desc">Run <code>npm install</code> in the root directory to install React, Vite, Recharts, and Lucide React.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot purple"></div>
+        <div class="tl-step">STEP 3 · Optional</div>
+        <div class="tl-title">Start the Flask Backend</div>
+        <div class="tl-desc"><code>cd backend &amp;&amp; pip install flask flask-cors &amp;&amp; python app.py</code><br/>Runs on port 5000. Skip this step to use Edge Sandbox mode instead.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot green"></div>
+        <div class="tl-step">STEP 4 · Optional</div>
+        <div class="tl-title">Start the Edge AI Simulation</div>
+        <div class="tl-desc"><code>cd edge &amp;&amp; pip install requests &amp;&amp; python sim.py</code><br/>Pushes live simulated data to the Flask backend every 5 seconds.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot red"></div>
+        <div class="tl-step">STEP 5</div>
+        <div class="tl-title">Launch the Dashboard</div>
+        <div class="tl-desc"><code>npm run dev</code> — Open <strong>http://localhost:5173</strong> in your browser. 🚀</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot gold"></div>
+        <div class="tl-step">SHORTCUT</div>
+        <div class="tl-title">Use demo.bat (Windows)</div>
+        <div class="tl-desc">Double-click <code>demo.bat</code> to launch all three services simultaneously in separate command windows.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- ── 9. Project Structure ───────────────── -->
+  <div class="section page-break">
+    <p class="section-label">09 · FILES</p>
+    <h2 class="section-title">Project <span>Structure</span></h2>
+
+    <table>
+      <thead>
+        <tr><th>Path</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>src/App.jsx</td><td>Main React dashboard — all 5 panels, live data polling, Edge Sandbox fallback logic</td></tr>
+        <tr><td>src/App.css</td><td>Component-level cyberpunk styles for panels, signals, badges, feeds</td></tr>
+        <tr><td>src/index.css</td><td>Global CSS design system — CSS variables, glassmorphism utilities, animations</td></tr>
+        <tr><td>src/main.jsx</td><td>React entry point — mounts App into #root</td></tr>
+        <tr><td>backend/app.py</td><td>Flask REST API — in-memory state store, GET + POST endpoints</td></tr>
+        <tr><td>edge/sim.py</td><td>Edge AI simulation engine — density, ANPR, EVP, alerts, weather</td></tr>
+        <tr><td>public/cctv.png</td><td>Live CCTV feed visual asset used in the surveillance panel</td></tr>
+        <tr><td>index.html</td><td>HTML entry point — loads Vite + React bundle</td></tr>
+        <tr><td>vite.config.js</td><td>Vite build config — base path set for GitHub Pages deployment</td></tr>
+        <tr><td>demo.bat</td><td>Windows one-click launcher for all three services</td></tr>
+        <tr><td>.github/workflows/deploy.yml</td><td>GitHub Actions CI/CD — auto-deploys to GitHub Pages on push to main</td></tr>
+        <tr><td>package.json</td><td>npm manifest — dependencies, scripts (dev, build, preview, lint)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- ── 10. Deployment ────────────────────── -->
+  <div class="section">
+    <p class="section-label">10 · DEPLOYMENT</p>
+    <h2 class="section-title">CI/CD & <span>Deployment</span></h2>
+    <p>
+      The frontend is deployed automatically to <strong>GitHub Pages</strong> using a GitHub Actions
+      workflow triggered on every push to the <code>main</code> branch.
+    </p>
+
+    <div class="card-grid" style="margin-top:1.5rem;">
+      <div class="card gold">
+        <div class="card-title">🔁 Trigger</div>
+        <div class="card-desc">Push to <code>main</code> branch automatically starts the workflow.</div>
+      </div>
+      <div class="card">
+        <div class="card-title">🏗 Build Step</div>
+        <div class="card-desc">Runs <code>npm install</code> then <code>npm run build</code> producing optimised static files in <code>/dist</code>.</div>
+      </div>
+      <div class="card green">
+        <div class="card-title">🚀 Deploy Step</div>
+        <div class="card-desc">Deploys the <code>/dist</code> folder to the <code>gh-pages</code> branch, served live by GitHub Pages.</div>
+      </div>
+    </div>
+
+    <div class="highlight" style="margin-top:1.5rem;">
+      <strong>Live URL:</strong> <span style="color:var(--cyan)">https://Paradoxai77.github.io/Traffic-System/</span><br/>
+      <strong>Repository:</strong> <span style="color:var(--cyan)">https://github.com/Paradoxai77/Traffic-System</span>
+    </div>
+
+    <div style="margin-top:2rem;">
+      <p class="section-label" style="margin-bottom:0.75rem;">NPM SCRIPTS</p>
+      <table>
+        <thead><tr><th>Command</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>npm run dev</code></td><td>Start local development server with HMR (default port 5173)</td></tr>
+          <tr><td><code>npm run build</code></td><td>Build optimised production bundle into the /dist directory</td></tr>
+          <tr><td><code>npm run preview</code></td><td>Preview the production build locally before deploying</td></tr>
+          <tr><td><code>npm run lint</code></td><td>Run ESLint on all source files to catch code quality issues</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- ── 11. PPT Slide Outline ─────────────── -->
+  <div class="section page-break">
+    <p class="section-label">11 · PRESENTATION GUIDE</p>
+    <h2 class="section-title">Suggested PPT <span>Slide Structure</span></h2>
+    <p>Use the sections below as your slide outline for the presentation:</p>
+
+    <table style="margin-top:1.5rem;">
+      <thead>
+        <tr><th>#</th><th>Slide Title</th><th>Key Points to Cover</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>Title Slide</td><td>Ruby Traffic AI · Smart City Command Centre · Team name · Date</td></tr>
+        <tr><td>2</td><td>Problem Statement</td><td>Urban congestion, manual monitoring inefficiency, delayed emergency response, traffic law violations going undetected</td></tr>
+        <tr><td>3</td><td>Our Solution</td><td>AI-powered real-time traffic management platform with automated detection and response</td></tr>
+        <tr><td>4</td><td>Key Features</td><td>ANPR, EVP, Edge AI analytics, Environmental monitoring, Real-time dashboard</td></tr>
+        <tr><td>5</td><td>System Architecture</td><td>React Frontend ↔ Flask Backend ↔ Edge AI Sim — show the 3-service diagram</td></tr>
+        <tr><td>6</td><td>Dashboard Demo</td><td>Walk through the 5 panels — KPIs, chart, CCTV, node topology, incident log</td></tr>
+        <tr><td>7</td><td>Edge AI Engine</td><td>5-second cycle, weather simulation, EVP logic, ANPR + fine calculation</td></tr>
+        <tr><td>8</td><td>Tech Stack</td><td>React 19, Vite 8, Python Flask, Recharts, Vanilla CSS, GitHub Actions</td></tr>
+        <tr><td>9</td><td>Deployment</td><td>GitHub Pages CI/CD, live URL, offline-first fallback capability</td></tr>
+        <tr><td>10</td><td>Impact & Future</td><td>CO₂ reduction, response time improvement, planned ML model integration, real CCTV API</td></tr>
+        <tr><td>11</td><td>Live Demo / QnA</td><td>Show dashboard running live, invite questions</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ═══ INDUSTRY RESEARCH (sourced from Isarsoft) ═══ -->
+<div class="content">
+  <div class="sep"></div>
+
+  <!-- §12 Industry Context -->
+  <div class="section page-break">
+    <div class="source-cite">📖 SOURCE · ISARSOFT.COM · DECEMBER 2025</div>
+    <p class="section-label">12 · INDUSTRY CONTEXT</p>
+    <h2 class="section-title">AI in Traffic Management — <span>Global Landscape</span></h2>
+    <p>Artificial Intelligence offers vast potential in revolutionising traffic management systems. The use of AI is based on real-time data collection and analysis — using machine learning, computer vision, and data analytics to give traffic planners actionable insights to analyse, detect, and predict traffic patterns.</p>
+    <div class="highlight" style="border-left-color:var(--purple);background:rgba(139,92,246,0.04);">
+      <strong>Active Traffic Management (ATM):</strong> AI-based video analytics have given way to ATM — allowing traffic to be managed dynamically according to current or expected conditions, lowering emissions, conserving resources, and quickly identifying safety-critical events.
+    </div>
+    <div class="highlight" style="border-left-color:var(--gold);background:rgba(255,215,0,0.04);">
+      <strong>Intelligent Transport Systems (ITS):</strong> AI forms the backbone of modern ITS, where vehicles, infrastructure, and control centres share information via Vehicle-to-Everything (V2X) communication — V2V, V2I, and V2P — improving awareness, optimising signal timing, and reducing congestion.
+    </div>
+    <div class="research-stat-grid">
+      <div class="r-stat"><div class="r-stat-val">55%</div><div class="r-stat-label">EU emission reduction target by 2030 vs 1990</div></div>
+      <div class="r-stat"><div class="r-stat-val">41h</div><div class="r-stat-label">Avg hrs/yr German drivers spend searching for parking</div></div>
+      <div class="r-stat"><div class="r-stat-val">4.3km</div><div class="r-stat-label">Aachen corridor: 100+ lidars + 200 cameras</div></div>
+      <div class="r-stat"><div class="r-stat-val">V2X</div><div class="r-stat-label">Vehicle-to-Everything communication standard</div></div>
+      <div class="r-stat"><div class="r-stat-val">GDPR</div><div class="r-stat-label">Privacy compliance for EU AI traffic systems</div></div>
+      <div class="r-stat"><div class="r-stat-val">ATM</div><div class="r-stat-label">Active Traffic Management — AI-driven dynamic control</div></div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- §13 Use Cases -->
+  <div class="section page-break">
+    <div class="source-cite">📖 SOURCE · ISARSOFT.COM · DECEMBER 2025</div>
+    <p class="section-label">13 · USE CASES</p>
+    <h2 class="section-title">8 Proven AI Traffic <span>Use Cases</span></h2>
+    <div class="use-case-grid">
+      <div class="uc-card">
+        <div class="uc-num">USE CASE 01</div>
+        <div class="uc-title">🔮 Traffic Flow Prediction</div>
+        <div class="uc-desc">By analysing real-time and historical data, AI predicts where congestion will form and helps cities act before delays build up. ML algorithms learn and identify patterns between variables that impact traffic flow.</div>
+        <div class="uc-example">City adjusts traffic lights in advance before a stadium event to prevent bottlenecks forming.</div>
+      </div>
+      <div class="uc-card">
+        <div class="uc-num">USE CASE 02</div>
+        <div class="uc-title">⚠️ Incident Detection &amp; Management</div>
+        <div class="uc-desc">AI spots unusual road events within seconds, allowing traffic operators to respond immediately. Rapid detection prevents long delays and reduces secondary accidents caused by stationary vehicles.</div>
+        <div class="uc-example">Cameras identify a wrong-way driver on a highway and alert authorities instantly. Stopped truck detected → drivers rerouted in real-time.</div>
+      </div>
+      <div class="uc-card">
+        <div class="uc-num">USE CASE 03</div>
+        <div class="uc-title">🚦 Adaptive Signal Control</div>
+        <div class="uc-desc">AI-powered signals use <strong>Coordinated Progressive Signaling</strong> (constant flow at busy intersections) and <strong>Coordinated Adaptive Signals</strong> (real-time demand alignment) — replacing static signal timing.</div>
+        <div class="uc-example">Spike in vehicles → longer green phases. Late at night → shorter red phases to avoid unnecessary waiting.</div>
+      </div>
+      <div class="uc-card">
+        <div class="uc-num">USE CASE 04</div>
+        <div class="uc-title">🚌 Public Transport Optimization</div>
+        <div class="uc-desc">AI analyses how people move — identifying busiest bus stops, demand spikes, and typical delays. The system continuously adjusts timetables and redesigns routes when needed instead of relying on static schedules.</div>
+        <div class="uc-example">Consistently overcrowded 8AM bus line gets an extra vehicle added. Under-used routes auto-shortened.</div>
+      </div>
+      <div class="uc-card">
+        <div class="uc-num">USE CASE 05</div>
+        <div class="uc-title">🚨 Emergency Vehicle Preemption</div>
+        <div class="uc-desc">AI creates a <strong>"green wave"</strong> by adjusting nearby traffic lights to give emergency vehicles a clear route. Cameras and sensors detect the approaching vehicle, cascading green signals along its path — every second matters.</div>
+        <div class="uc-example">✅ Implemented in Ruby Traffic AI — 3% per-cycle EVP trigger with 30% auto-clear logic per cycle.</div>
+      </div>
+      <div class="uc-card">
+        <div class="uc-num">USE CASE 06</div>
+        <div class="uc-title">🌿 Environmental Monitoring</div>
+        <div class="uc-desc">AI combines data from cameras, pollution sensors, and vehicle classifications (cars, trucks, electric, diesel) to understand how traffic impacts emissions and redirect flows away from sensitive zones like schools or hospitals.</div>
+        <div class="uc-example">✅ Ruby Traffic AI tracks CO₂ saved in real time as signal optimisations reduce idle engine time.</div>
+      </div>
+      <div class="uc-card">
+        <div class="uc-num">USE CASE 07</div>
+        <div class="uc-title">🅿️ Smart Parking Management</div>
+        <div class="uc-desc">AI monitors parking lots and street parking via camera analytics in real time — sending availability data to navigation apps, road signs, or in-car systems to eliminate search traffic circling.</div>
+        <div class="uc-example">Jackson Hole Airport: video analytics monitored occupancy, reducing wait times and guiding drivers to spots instantly.</div>
+      </div>
+      <div class="uc-card">
+        <div class="uc-num">USE CASE 08</div>
+        <div class="uc-title">🗺️ AI Navigation &amp; Route Optimization</div>
+        <div class="uc-desc">AI-powered navigation apps leverage real-time traffic data from GPS signals, sensors, and user-generated data for dynamic rerouting. Variable Speed Limits (VSL) can be congestion-responsive or weather-responsive, connected with ride-sharing, parking, and EV charging ecosystems.</div>
+        <div class="uc-example">Dynamic rerouting of 10,000 drivers around an accident: avg delay reduced from 25 min to under 3 min.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- §14 Technology -->
+  <div class="section page-break">
+    <div class="source-cite">📖 SOURCE · ISARSOFT.COM · DECEMBER 2025</div>
+    <p class="section-label">14 · AI TECHNOLOGY</p>
+    <h2 class="section-title">The Technology <span>Behind Traffic AI</span></h2>
+    <div class="two-col">
+      <div>
+        <div class="card" style="margin-bottom:1rem;">
+          <div class="card-title">🤖 Machine Learning Models</div>
+          <div class="card-desc">Trained on historical databases to learn and identify patterns between variables impacting traffic flow. Primary advantage: can analyse increased complexity and non-linear relationships to generate predictions of enhanced accuracy. Algorithms automatically detect and adapt to real-time patterns.</div>
+        </div>
+        <div class="card purple" style="margin-bottom:1rem;">
+          <div class="card-title">📡 Multi-Source Data Fusion</div>
+          <div class="card-desc">Predictions use several data sources simultaneously: historical records, weather data, GPS traces, existing road network information, real-time camera-based video analytics, and IoT sensors — combined for maximum reliability.</div>
+        </div>
+        <div class="card green">
+          <div class="card-title">👁️ Computer Vision &amp; Video Analytics</div>
+          <div class="card-desc">Transforms ordinary camera streams into actionable traffic insights: detecting vehicle movements, counting flows, identifying congestion, and recognising abnormal situations. Works completely privacy-compliant — objects and humans are always anonymised and pixelated. No new hardware required.</div>
+        </div>
+      </div>
+      <div>
+        <div class="card gold" style="margin-bottom:1rem;">
+          <div class="card-title">🪞 Digital Twins</div>
+          <div class="card-desc">Virtual replicas of physical traffic assets calibrated to different KPIs. Allow simulation of interventions — rerouting, adjusting lights, deploying warnings — before gridlock forms. Aachen–Düsseldorf: 4.3 km, 100+ lidars, 200 cameras, live digital twin. Fully GDPR-compliant.</div>
+        </div>
+        <div class="card red" style="margin-bottom:1rem;">
+          <div class="card-title">🌐 V2X Communication</div>
+          <div class="card-desc">Vehicle-to-Everything (V2V, V2I, V2P) enables vehicles, infrastructure, and control centres to share safety-critical data in real time. Connected vehicles transmit speed, position, and braking data to predict potential conflicts and support smoother, safer traffic flow.</div>
+        </div>
+        <div class="card">
+          <div class="card-title">⚡ Variable Speed Limits (VSL)</div>
+          <div class="card-desc">Dynamic speed limits aligned to congestion or weather conditions. When congestion builds, VSL slows upstream traffic to prevent shockwaves. Hard Shoulder Running (HSR) allows temporary use of hard shoulders as extra driving lanes during peak demand — AI predicts demand surges reliably.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- §15 Benefits -->
+  <div class="section page-break">
+    <div class="source-cite">📖 SOURCE · ISARSOFT.COM · DECEMBER 2025</div>
+    <p class="section-label">15 · BENEFITS</p>
+    <h2 class="section-title">4 Key Benefits of <span>AI-Powered Traffic</span></h2>
+    <div class="benefit-item">
+      <div class="benefit-num">01</div>
+      <div>
+        <div class="benefit-title">🚗 Improved Traffic Flow &amp; Reduced Congestion</div>
+        <div class="benefit-desc">AI-based traffic technology creates a network of interconnected processes — allowing easier, faster coordination for traffic personnel, drivers, and commuters to optimise routes and time. During high-demand periods, Hard Shoulder Running (HSR) is deployed as a dynamic extra lane; AI makes the demand surge more predictable, better preparing personnel to act.</div>
+      </div>
+    </div>
+    <div class="benefit-item">
+      <div class="benefit-num">02</div>
+      <div>
+        <div class="benefit-title">🛡️ Safety &amp; Accident Prevention</div>
+        <div class="benefit-desc">AI secures traffic plans that prioritise safety for every vehicle, pedestrian, and cyclist. EVP interrupts normal signal timing to allow emergency vehicles to pass through intersections quickly and safely. Pedestrian counters, bicycle counters, traffic cameras, and smart street lights all contribute additional data for Vulnerable Road Users (VRUs).</div>
+      </div>
+    </div>
+    <div class="benefit-item">
+      <div class="benefit-num">03</div>
+      <div>
+        <div class="benefit-title">🌱 Environmental Benefits</div>
+        <div class="benefit-desc">The EU proposes cutting vehicle-based emissions by 55% from 1990 levels by 2030. AI enables infrastructural changes that reduce travel time, optimises parking (German drivers waste 41 hrs/yr searching for parking), and raises general fuel consumption awareness. Ruby Traffic AI directly tracks CO₂ saved in real time as signal optimisations reduce idle engine time.</div>
+      </div>
+    </div>
+    <div class="benefit-item">
+      <div class="benefit-num">04</div>
+      <div>
+        <div class="benefit-title">💰 Economic Impact</div>
+        <div class="benefit-desc">With predictive analysis and real-time monitoring, resources are deployed as per requirements rather than fixed schedules. Excess expenditure is avoided, and remaining funds can be diverted towards welfare and development programs. Reduced congestion directly translates to lower fuel costs, fewer accidents, and higher worker productivity across cities.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- §16 Challenges -->
+  <div class="section page-break">
+    <div class="source-cite">📖 SOURCE · ISARSOFT.COM · DECEMBER 2025</div>
+    <p class="section-label">16 · CHALLENGES</p>
+    <h2 class="section-title">Key <span>Challenges</span> to Address</h2>
+    <p>AI offers powerful opportunities but its use brings important challenges that cities must address proactively:</p>
+    <div style="margin-top:1.5rem;">
+      <div class="challenge-item">
+        <div class="challenge-num">01</div>
+        <div>
+          <div class="benefit-title">🔒 Data Privacy</div>
+          <div class="benefit-desc">Data privacy standards must be stringently maintained. Anonymisation of data streams protects identity and financial information. Privacy masks are applicable to any detected object automatically. All AI-powered applications must comply with GDPR (EU) and CCPA (US). Ruby Traffic AI's ANPR data is a prime area requiring privacy-first design in production deployments.</div>
+        </div>
+      </div>
+      <div class="challenge-item">
+        <div class="challenge-num">02</div>
+        <div>
+          <div class="benefit-title">🛡 Cybersecurity</div>
+          <div class="benefit-desc">Data security safeguards digital data against cyber attacks or data breaches. Key measures include multi-factor authentication, end-to-end encryption, and firewall protection. When combined, they significantly enhance how secure the traffic management data pipeline is against exposure, deletion, or corruption.</div>
+        </div>
+      </div>
+      <div class="challenge-item">
+        <div class="challenge-num">03</div>
+        <div>
+          <div class="benefit-title">⚖️ Ethical Decision-Making</div>
+          <div class="benefit-desc">The human component is crucial for ensuring ethical principles are upheld when making important decisions. True success with AI requires a judicious mixture of human judgment and machine intelligence — especially critical when AI decisions affect emergency response prioritisation and traffic violation enforcement.</div>
+        </div>
+      </div>
+      <div class="challenge-item">
+        <div class="challenge-num">04</div>
+        <div>
+          <div class="benefit-title">🤝 Public Acceptance &amp; Trust</div>
+          <div class="benefit-desc">AI in traffic can be fully implemented only when accepted by all stakeholders — personnel, planners, drivers, commuters, law enforcement, and the general public. Awareness is imperative, as is positive reinforcement through consequence-based decisions. Transparency in how AI makes decisions is critical for long-term adoption and public confidence.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sep"></div>
+
+  <!-- §17 Future Trends -->
+  <div class="section page-break">
+    <div class="source-cite">📖 SOURCE · ISARSOFT.COM · DECEMBER 2025</div>
+    <p class="section-label">17 · FUTURE TRENDS</p>
+    <h2 class="section-title">Future <span>Trends &amp; Innovations</span></h2>
+    <p>Ruby Traffic AI is positioned to grow into each of these next-generation capabilities:</p>
+    <div style="margin-top:1.5rem;">
+      <div class="future-card">
+        <div class="future-card-title">🏙️ Smart Cities Integration</div>
+        <div class="future-card-desc">Intelligent traffic management is being juxtaposed with urban planning to build smarter, greener cities. Smart cities rely on data-oriented decision making across simultaneously occurring systems — road traffic, rail and water-based transportation, infrastructure, and parking facilities. <strong>Helsinki's Smart City mobility program</strong> is a clear European example: AI is used to optimise traffic signals, predict congestion, support autonomous shuttle routes, and integrate multimodal data into a unified platform. "The goal is to explore and test new methods, such as artificial intelligence, in order to enable development of better services for citizens, business and the city itself."</div>
+      </div>
+      <div class="future-card">
+        <div class="future-card-title">🔷 Digital Twin Expansion</div>
+        <div class="future-card-desc">The <strong>Aachen–Düsseldorf corridor</strong> in Germany demonstrates digital twins at scale: 100+ lidar units and 200 cameras feeding a live digital twin. If congestion builds, the twin simulates interventions (rerouting, adjusting lights, deploying warnings) before gridlock forms. Fully GDPR-compliant — showing digital transformation in traffic data doesn't have to come at the cost of privacy. Future Ruby Traffic AI versions could incorporate a digital twin layer for pre-emptive simulation.</div>
+      </div>
+      <div class="future-card">
+        <div class="future-card-title">🚗 Connected &amp; Autonomous Vehicles</div>
+        <div class="future-card-desc">As connected vehicles become mainstream, they will transmit speed, position, and braking data to the traffic management platform in real time. V2X communication will allow Ruby Traffic AI to receive direct data from vehicles on the road — eliminating the need for camera-based inference and dramatically improving prediction accuracy. Autonomous shuttles will require dedicated signal logic, queue management, and priority routing integration.</div>
+      </div>
+      <div class="future-card">
+        <div class="future-card-title">📹 AI Video Analytics at Scale</div>
+        <div class="future-card-desc">Video analytics software transforms ordinary camera streams into actionable traffic insights — detecting vehicle movements, counting flows, identifying congestion, and recognising abnormal situations — without requiring additional hardware installations. Works completely privacy-compliant: vehicle and people detection is always anonymous and objects are pixelated. Ruby Traffic AI's CCTV feed panel is a direct implementation of this concept, ready to connect to real IP camera streams.</div>
+      </div>
+      <div class="future-card">
+        <div class="future-card-title">🌍 How Ruby Traffic AI Aligns with These Trends</div>
+        <div class="future-card-desc">Ruby Traffic AI already implements the core building blocks: real-time edge AI analytics, ANPR violation detection, EVP, environmental CO₂ tracking, and adaptive signal control logic. The platform's microservices architecture with REST APIs is designed for easy expansion. <strong>Future roadmap:</strong> integration of real IP camera feeds, live pollution sensor data, V2X vehicle telemetry, ML-based congestion forecasting models, and a Digital Twin simulation layer for proactive traffic management before gridlock occurs.</div>
+      </div>
+    </div>
+    <div class="highlight" style="border-left-color:var(--gold);background:rgba(255,215,0,0.04);margin-top:1.5rem;">
+      <strong>Source:</strong> All industry research in Sections 12–17 is sourced from:
+      <em>"AI in Traffic Management"</em> — Isarsoft, published December 12, 2025.
+      <span style="color:var(--cyan)">https://www.isarsoft.com/article/ai-in-traffic-management</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <span>RUBY TRAFFIC AI</span> · Smart City Command Centre · 2026<br/>
+  <span style="font-size:0.6rem;margin-top:0.4rem;display:block;">github.com/Paradoxai77/Traffic-System</span>
+</div>
+
+</body>
+</html>
