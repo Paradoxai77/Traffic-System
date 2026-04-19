@@ -5,7 +5,12 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>traffic-new</title>
-    <meta http-equiv="refresh" content="0; url=/Traffic-System/dist/index.html">
+    <script>
+      // Redirect to /dist/ only if not already there to prevent infinite loops
+      if (window.location.pathname.endsWith('/Traffic-System/') || window.location.pathname.endsWith('/Traffic-System')) {
+        window.location.replace("/Traffic-System/dist/index.html");
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
