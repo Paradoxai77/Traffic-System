@@ -103,7 +103,7 @@ export default function App() {
       <main className="main-content">
         <header className="top-header">
           <div className="page-title">
-            Nexus <span style={{ color: "var(--brand-cyan)", fontWeight: 300 }}>Traffic AI</span>
+            Ruby <span style={{ color: "var(--brand-cyan)", fontWeight: 300 }}>Traffic AI</span>
           </div>
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
             <div className="env-badge">

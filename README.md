@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://readme-typing-svg.demolab.com?font=Orbitron&size=40&duration=3000&pause=1000&color=00FFEA&center=true&vCenter=true&width=600&lines=NEXUS+TRAFFIC+AI;Smart+City+Command+Center;Edge+AI+%7C+Real-Time+Analytics" alt="Nexus Traffic AI" />
+<img src="https://readme-typing-svg.demolab.com?font=Orbitron&size=40&duration=3000&pause=1000&color=00FFEA&center=true&vCenter=true&width=600&lines=RUBY+TRAFFIC+AI;Smart+City+Command+Center;Edge+AI+%7C+Real-Time+Analytics" alt="Ruby Traffic AI" />
 
 <br/>
 
@@ -77,7 +77,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                   NEXUS TRAFFIC AI                       │
+│                    RUBY TRAFFIC AI                       │
 │                                                         │
 │  ┌──────────────┐    ┌──────────────┐    ┌───────────┐  │
 │  │  React 19    │    │  Python      │    │  Edge AI  │  │
@@ -181,7 +181,7 @@ The project is automatically deployed to **GitHub Pages** via GitHub Actions on 
 
 ```yaml
 # Triggered on push to main
-name: Deploy Nexus Traffic AI
+name: Deploy Ruby Traffic AI
 on:
   push:
     branches: [main]
