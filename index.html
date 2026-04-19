@@ -5,7 +5,13 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>traffic-new</title>
-    <meta http-equiv="refresh" content="0; url=/Traffic-System/dist/index.html">
+    <script>
+      // Smart redirect to /dist/ only if we are at the root or main index
+      const path = window.location.pathname;
+      if (path.endsWith("/Traffic-System/") || path.endsWith("/Traffic-System/index.html")) {
+        window.location.replace("/Traffic-System/dist/index.html" + window.location.search);
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
