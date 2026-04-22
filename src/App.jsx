@@ -7,6 +7,8 @@ import {
   ArrowUpRight, Map, CloudRain, Wind, Radio, Globe,
   ParkingSquare, Satellite, BarChart2, BookOpen, Settings
 } from 'lucide-react';
+import SplashScreen from './SplashScreen.jsx';
+import './SplashScreen.css';
 
 /* ─── Research constants (Isarsoft, Dec 2025) ─── */
 const VIOLATION_TYPES = [
@@ -52,6 +54,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export default function App() {
+  const [showSplash, setShowSplash] = useState(true);
   const [activeNav, setActiveNav] = useState('dashboard');
   const [data, setData] = useState({
     intersections: [],
@@ -202,6 +205,8 @@ export default function App() {
   };
 
   return (
+    <>
+      {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
     <div className="site-wrapper">
 
       {/* ═══ TOP NAVIGATION ═══ */}
@@ -244,6 +249,16 @@ export default function App() {
 
       {/* ═══ HERO SECTION ═══ */}
       <section className="hero-section">
+        {/* 3D Background Image */}
+        <div className="hero-bg-image">
+          <img src="hero_3d.png" alt="Smart City Command Centre" />
+          <div className="hero-bg-overlay" />
+          <div className="hero-scan-line" />
+          <div className="hero-glow-orb orb-cyan" />
+          <div className="hero-glow-orb orb-purple" />
+          <div className="hero-glow-orb orb-green" />
+        </div>
+
         <div className="hero-top">
           <div className="hero-title-group">
             <div className="hero-eyebrow">
@@ -353,7 +368,7 @@ export default function App() {
               <span style={{fontSize:'0.7rem',color:'var(--brand-cyan)',fontWeight:600,letterSpacing:'1px'}}>AI TRACKING</span>
             </div>
             <div className="cctv-container">
-              <img src="/cctv.png" className="cctv-feed" alt="Live CCTV"/>
+              <img src="cctv_3d.png" className="cctv-feed" alt="AI Vision System"/>
               <div className="cctv-overlay"/>
               <div className="cctv-scan-line"/>
               <div className="cctv-crosshair"/>
@@ -398,6 +413,15 @@ export default function App() {
               </div>
               <div style={{fontSize:'0.72rem',color:'var(--text-muted)'}}>
                 {data.intersections.filter(i=>i.emergency_override).length} EVP active
+              </div>
+            </div>
+            {/* 3D Signal Image */}
+            <div className="intersection-3d-image">
+              <img src="signal_3d.png" alt="Smart Traffic Signal Node" />
+              <div className="intersection-3d-overlay" />
+              <div className="intersection-3d-label">
+                <span>Edge AI Node</span>
+                <span>Pune, MH</span>
               </div>
             </div>
             {data.intersections.map(int=>(
@@ -559,5 +583,6 @@ export default function App() {
       </footer>
 
     </div>
+    </>
   );
 }
