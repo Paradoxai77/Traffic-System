@@ -111,7 +111,7 @@ export default function SplashScreen({ onFinish }) {
 
         {/* Traffic image with scanning overlay */}
         <div className={`splash-image-container ${phase === 'reveal' || phase === 'exit' ? 'splash-image-active' : ''}`}>
-          <img src="splash_traffic.png" alt="Traffic" className="splash-image" />
+          <img src={`${import.meta.env.BASE_URL}splash_traffic.png`} alt="Traffic" className="splash-image" />
           <div className="splash-image-overlay" />
           <div className="splash-scan-bar" />
           {/* AI Detection boxes */}

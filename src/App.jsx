@@ -251,7 +251,7 @@ export default function App() {
       <section className="hero-section">
         {/* 3D Background Image */}
         <div className="hero-bg-image">
-          <img src="hero_3d.png" alt="Smart City Command Centre" />
+          <img src={`${import.meta.env.BASE_URL}hero_3d.png`} alt="Smart City Command Centre" />
           <div className="hero-bg-overlay" />
           <div className="hero-scan-line" />
           <div className="hero-glow-orb orb-cyan" />
@@ -368,7 +368,7 @@ export default function App() {
               <span style={{fontSize:'0.7rem',color:'var(--brand-cyan)',fontWeight:600,letterSpacing:'1px'}}>AI TRACKING</span>
             </div>
             <div className="cctv-container">
-              <img src="cctv_3d.png" className="cctv-feed" alt="AI Vision System"/>
+              <img src={`${import.meta.env.BASE_URL}cctv_3d.png`} className="cctv-feed" alt="AI Vision System"/>
               <div className="cctv-overlay"/>
               <div className="cctv-scan-line"/>
               <div className="cctv-crosshair"/>
@@ -417,7 +417,7 @@ export default function App() {
             </div>
             {/* 3D Signal Image */}
             <div className="intersection-3d-image">
-              <img src="signal_3d.png" alt="Smart Traffic Signal Node" />
+              <img src={`${import.meta.env.BASE_URL}signal_3d.png`} alt="Smart Traffic Signal Node" />
               <div className="intersection-3d-overlay" />
               <div className="intersection-3d-label">
                 <span>Edge AI Node</span>
