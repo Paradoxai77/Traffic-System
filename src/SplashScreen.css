@@ -28,10 +28,60 @@
   100% { opacity: 0; transform: scale(1.08); filter: blur(10px); }
 }
 
+/* ─── Full-screen Background Image ─── */
+.splash-bg-img {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 1.5s ease-in-out;
+}
+
+.splash-bg-img.loaded {
+  opacity: 1;
+}
+
+.splash-bg-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.25) contrast(1.2) saturate(0.7);
+  animation: bgSlowZoom 12s ease-in-out infinite alternate;
+}
+
+@keyframes bgSlowZoom {
+  0%   { transform: scale(1); }
+  100% { transform: scale(1.1); }
+}
+
+.splash-bg-img-overlay {
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse 80% 60% at 50% 50%, rgba(6,10,20,0.3) 0%, rgba(6,10,20,0.85) 100%),
+    linear-gradient(0deg, rgba(6,10,20,0.95) 0%, transparent 30%, transparent 70%, rgba(6,10,20,0.8) 100%);
+}
+
+.splash-bg-scanline {
+  position: absolute;
+  left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(0,240,255,0.6), transparent);
+  box-shadow: 0 0 20px rgba(0,240,255,0.3);
+  animation: splashScanMove 3s ease-in-out infinite;
+}
+
+@keyframes splashScanMove {
+  0%   { top: 0; }
+  50%  { top: 100%; }
+  100% { top: 0; }
+}
+
 /* ─── Background Grid ─── */
 .splash-grid {
   position: absolute;
   inset: 0;
+  z-index: 1;
   background-image:
     linear-gradient(rgba(0,240,255,0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0,240,255,0.03) 1px, transparent 1px);
@@ -48,6 +98,7 @@
 .splash-particles {
   position: absolute;
   inset: 0;
+  z-index: 1;
   pointer-events: none;
 }
 
@@ -69,7 +120,7 @@
 /* ─── Content Container ─── */
 .splash-content {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -140,6 +191,7 @@
   -webkit-text-fill-color: transparent;
   animation: titleShimmer 3s linear infinite;
   text-align: center;
+  text-shadow: none;
 }
 
 @keyframes titleShimmer {
@@ -161,80 +213,23 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ─── Traffic Image Container ─── */
-.splash-image-container {
-  position: relative;
-  width: 100%;
-  max-width: 500px;
-  border-radius: 16px;
-  overflow: hidden;
-  border: 1px solid rgba(0, 240, 255, 0.15);
-  opacity: 0;
-  transform: scale(0.9) translateY(20px);
-  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow:
-    0 0 40px rgba(0, 240, 255, 0.08),
-    inset 0 0 40px rgba(0, 0, 0, 0.3);
-}
-
-.splash-image-container.splash-image-active {
-  opacity: 1;
-  transform: scale(1) translateY(0);
-}
-
-.splash-image {
-  width: 100%;
-  display: block;
-  filter: brightness(0.7) contrast(1.1) saturate(0.9);
-}
-
-.splash-image-overlay {
-  position: absolute;
+/* ─── AI Detection Boxes (float over background) ─── */
+.splash-detect-boxes {
+  position: fixed;
   inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(6, 10, 20, 0.3) 0%,
-    rgba(0, 240, 255, 0.05) 50%,
-    rgba(6, 10, 20, 0.6) 100%
-  );
-  mix-blend-mode: multiply;
+  z-index: 2;
+  pointer-events: none;
 }
 
-/* Scanning bar */
-.splash-scan-bar {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(0, 240, 255, 0.8) 50%,
-    transparent 100%
-  );
-  box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
-  animation: scanBarMove 2.5s ease-in-out infinite;
-}
-
-@keyframes scanBarMove {
-  0%   { top: 0%; }
-  50%  { top: 100%; }
-  100% { top: 0%; }
-}
-
-/* AI Detection Boxes */
 .splash-detect-box {
   position: absolute;
+  width: 90px;
+  height: 60px;
   border: 1.5px solid rgba(0, 255, 136, 0.7);
   border-radius: 4px;
   opacity: 0;
-  animation: detectBoxPop 0.4s ease-out forwards;
-  animation-delay: inherit;
+  animation: detectBoxPop 0.4s ease-out forwards, detectBoxPulse 2s ease-in-out 0.4s infinite;
   box-shadow: 0 0 8px rgba(0, 255, 136, 0.2);
-}
-
-.splash-image-container.splash-image-active .splash-detect-box {
-  animation: detectBoxPop 0.4s ease-out forwards, detectBoxPulse 2s ease-in-out infinite;
 }
 
 @keyframes detectBoxPop {
@@ -262,27 +257,12 @@
   letter-spacing: 0.5px;
 }
 
-/* Corner brackets */
-.splash-bracket {
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  border-color: rgba(0, 240, 255, 0.5);
-  border-style: solid;
-  border-width: 0;
-}
-
-.splash-bracket.tl { top: 8px;    left: 8px;   border-top-width: 2px; border-left-width: 2px; }
-.splash-bracket.tr { top: 8px;    right: 8px;  border-top-width: 2px; border-right-width: 2px; }
-.splash-bracket.bl { bottom: 8px; left: 8px;   border-bottom-width: 2px; border-left-width: 2px; }
-.splash-bracket.br { bottom: 8px; right: 8px;  border-bottom-width: 2px; border-right-width: 2px; }
-
 /* ─── Boot Terminal ─── */
 .splash-terminal {
   width: 100%;
   max-width: 520px;
-  background: rgba(0, 10, 20, 0.7);
-  border: 1px solid rgba(0, 240, 255, 0.1);
+  background: rgba(0, 10, 20, 0.8);
+  border: 1px solid rgba(0, 240, 255, 0.12);
   border-radius: 10px;
   padding: 0.8rem 1rem;
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
@@ -290,7 +270,7 @@
   line-height: 1.6;
   max-height: 200px;
   overflow-y: auto;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
   transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -451,4 +431,5 @@
   .splash-stat-num { font-size: 1.1rem; }
   .splash-terminal { font-size: 0.6rem; }
   .splash-logo-ring { width: 70px; height: 70px; }
+  .splash-detect-boxes { display: none; }
 }

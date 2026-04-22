@@ -12,15 +12,25 @@ const BOOT_LINES = [
   { text: "[OK ] All Systems Operational. Launching Dashboard...", delay: 3200 },
 ];
 
+const BASE = import.meta.env.BASE_URL;
+
 export default function SplashScreen({ onFinish }) {
   const [progress, setProgress] = useState(0);
   const [visibleLines, setVisibleLines] = useState(0);
   const [phase, setPhase] = useState('boot'); // boot -> reveal -> exit
   const [scanAngle, setScanAngle] = useState(0);
+  const [imgLoaded, setImgLoaded] = useState(false);
   const onFinishRef = useRef(onFinish);
 
   // Keep ref in sync
   useEffect(() => { onFinishRef.current = onFinish; }, [onFinish]);
+
+  // Preload image immediately
+  useEffect(() => {
+    const img = new Image();
+    img.src = `${BASE}splash_traffic.png`;
+    img.onload = () => setImgLoaded(true);
+  }, []);
 
   // Boot sequence terminal lines
   useEffect(() => {
@@ -51,19 +61,29 @@ export default function SplashScreen({ onFinish }) {
     return () => clearInterval(interval);
   }, []);
 
-  // Phase transitions — NO dependency on onFinish so timers don't reset
+  // Phase transitions
   useEffect(() => {
     const t1 = setTimeout(() => setPhase('reveal'), 3400);
-    const t2 = setTimeout(() => setPhase('exit'), 4800);
-    const t3 = setTimeout(() => onFinishRef.current(), 5600);
+    const t2 = setTimeout(() => setPhase('exit'), 5200);
+    const t3 = setTimeout(() => onFinishRef.current(), 6000);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, []);
 
+  const isReveal = phase === 'reveal' || phase === 'exit';
+
   return (
     <div className={`splash-screen ${phase === 'exit' ? 'splash-exit' : ''}`}>
+
+      {/* ── Full-screen background image (always rendered, fades in) ── */}
+      <div className={`splash-bg-img ${imgLoaded ? 'loaded' : ''}`}>
+        <img src={`${BASE}splash_traffic.png`} alt="" onLoad={() => setImgLoaded(true)} />
+        <div className="splash-bg-img-overlay" />
+        <div className="splash-bg-scanline" />
+      </div>
+
       {/* Animated background grid */}
       <div className="splash-grid" />
-      
+
       {/* Floating particles */}
       <div className="splash-particles">
         {Array.from({ length: 30 }).map((_, i) => (
@@ -85,7 +105,7 @@ export default function SplashScreen({ onFinish }) {
       {/* Main content */}
       <div className="splash-content">
         {/* Logo + Title at top */}
-        <div className={`splash-header ${phase !== 'boot' ? 'splash-header-up' : ''}`}>
+        <div className={`splash-header ${isReveal ? 'splash-header-up' : ''}`}>
           <div className="splash-logo-ring">
             <svg viewBox="0 0 120 120" className="splash-ring-svg">
               <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(0,240,255,0.08)" strokeWidth="2" />
@@ -109,33 +129,26 @@ export default function SplashScreen({ onFinish }) {
           <p className="splash-subtitle">Smart City Command Centre</p>
         </div>
 
-        {/* Traffic image with scanning overlay */}
-        <div className={`splash-image-container ${phase === 'reveal' || phase === 'exit' ? 'splash-image-active' : ''}`}>
-          <img src={`${import.meta.env.BASE_URL}splash_traffic.png`} alt="Traffic" className="splash-image" />
-          <div className="splash-image-overlay" />
-          <div className="splash-scan-bar" />
-          {/* AI Detection boxes */}
-          <div className="splash-detect-box" style={{ top: '25%', left: '15%', width: '80px', height: '55px', animationDelay: '0.2s' }}>
-            <span className="detect-label">CAR 94.2%</span>
+        {/* AI Detection boxes — appear during reveal */}
+        {isReveal && (
+          <div className="splash-detect-boxes">
+            <div className="splash-detect-box" style={{ top: '30%', left: '10%', animationDelay: '0.1s' }}>
+              <span className="detect-label">CAR 94.2%</span>
+            </div>
+            <div className="splash-detect-box" style={{ top: '20%', left: '55%', animationDelay: '0.3s' }}>
+              <span className="detect-label">BUS 97.8%</span>
+            </div>
+            <div className="splash-detect-box" style={{ top: '50%', left: '35%', animationDelay: '0.5s' }}>
+              <span className="detect-label">SUV 96.1%</span>
+            </div>
+            <div className="splash-detect-box" style={{ top: '60%', left: '70%', animationDelay: '0.7s' }}>
+              <span className="detect-label">CAR 98.4%</span>
+            </div>
           </div>
-          <div className="splash-detect-box" style={{ top: '20%', left: '55%', width: '100px', height: '70px', animationDelay: '0.5s' }}>
-            <span className="detect-label">BUS 97.8%</span>
-          </div>
-          <div className="splash-detect-box" style={{ top: '40%', left: '35%', width: '70px', height: '50px', animationDelay: '0.8s' }}>
-            <span className="detect-label">SUV 96.1%</span>
-          </div>
-          <div className="splash-detect-box" style={{ top: '55%', left: '70%', width: '60px', height: '45px', animationDelay: '1.1s' }}>
-            <span className="detect-label">CAR 98.4%</span>
-          </div>
-          {/* Corner brackets */}
-          <div className="splash-bracket tl" />
-          <div className="splash-bracket tr" />
-          <div className="splash-bracket bl" />
-          <div className="splash-bracket br" />
-        </div>
+        )}
 
         {/* Boot terminal */}
-        <div className={`splash-terminal ${phase !== 'boot' ? 'splash-terminal-hide' : ''}`}>
+        <div className={`splash-terminal ${isReveal ? 'splash-terminal-hide' : ''}`}>
           {BOOT_LINES.slice(0, visibleLines).map((line, i) => (
             <div key={i} className={`terminal-line ${i === visibleLines - 1 ? 'terminal-line-new' : ''}`}>
               <span className="terminal-prompt">&gt;</span>
@@ -150,7 +163,7 @@ export default function SplashScreen({ onFinish }) {
         </div>
 
         {/* Progress bar */}
-        <div className={`splash-progress-wrap ${phase !== 'boot' ? 'splash-progress-hide' : ''}`}>
+        <div className={`splash-progress-wrap ${isReveal ? 'splash-progress-hide' : ''}`}>
           <div className="splash-progress-track">
             <div className="splash-progress-fill" style={{ width: `${Math.min(progress, 100)}%` }}>
               <div className="splash-progress-glow" />
@@ -162,7 +175,7 @@ export default function SplashScreen({ onFinish }) {
         </div>
 
         {/* Stats that appear during reveal */}
-        <div className={`splash-stats ${phase === 'reveal' || phase === 'exit' ? 'splash-stats-show' : ''}`}>
+        <div className={`splash-stats ${isReveal ? 'splash-stats-show' : ''}`}>
           <div className="splash-stat-item">
             <div className="splash-stat-num">4</div>
             <div className="splash-stat-label">AI Camera Nodes</div>
