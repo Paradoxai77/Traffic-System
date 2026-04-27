@@ -1,6 +1,9 @@
 <div align="center">
 
-<img src="https://readme-typing-svg.demolab.com?font=Orbitron&size=40&duration=3000&pause=1000&color=00FFEA&center=true&vCenter=true&width=600&lines=RUBY+TRAFFIC+AI;Smart+City+Command+Center;Edge+AI+%7C+Real-Time+Analytics" alt="Ruby Traffic AI" />
+<img src="./assets/banner_3d.png" alt="Ruby Traffic AI 3D Banner" width="100%" />
+<br/>
+
+<img src="https://readme-typing-svg.demolab.com?font=Orbitron&size=40&duration=3000&pause=1000&color=00FFEA&center=true&vCenter=true&width=800&lines=RUBY+TRAFFIC+AI;Smart+City+Command+Center;Edge+AI+%7C+Real-Time+Analytics" alt="Ruby Traffic AI" />
 
 <br/>
 
@@ -75,22 +78,22 @@
 
 ## 🏗️ Architecture
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    RUBY TRAFFIC AI                       │
-│                                                         │
-│  ┌──────────────┐    ┌──────────────┐    ┌───────────┐  │
-│  │  React 19    │    │  Python      │    │  Edge AI  │  │
-│  │  Dashboard   │◄──►│  Flask API   │◄──►│  Sandbox  │  │
-│  │  (Vite 8)    │    │  (Backend)   │    │  Nodes    │  │
-│  └──────────────┘    └──────────────┘    └───────────┘  │
-│         │                   │                           │
-│  ┌──────▼──────┐    ┌───────▼──────┐                   │
-│  │  Recharts   │    │  REST API    │                   │
-│  │  Analytics  │    │  /api/dash.. │                   │
-│  └─────────────┘    └─────────────┘                   │
-└─────────────────────────────────────────────────────────┘
-```
+<div align="center">
+  <img src="./assets/architecture_3d.png" alt="3D Isometric Architecture Diagram" width="800" />
+</div>
+
+<br/>
+
+<details>
+<summary><b>🔍 View Technical Architecture Details</b></summary>
+<br/>
+
+The system is built on a distributed **Edge-to-Cloud architecture**:
+- **Frontend (Command Center):** React 19 + Vite 8 dashboard providing real-time data visualization via Recharts.
+- **Backend (API Gateway):** Python Flask REST API securely handling data bridging and historical logging.
+- **Edge Sandbox:** Self-contained edge simulation generating probabilistic traffic density, ANPR events, and emergency alerts.
+
+</details>
 
 ---
 
