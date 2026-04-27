@@ -5,7 +5,8 @@ import {
 import {
   Activity, Camera, ShieldAlert, Cpu, Video, Hexagon, Zap,
   ArrowUpRight, Map, CloudRain, Wind, Radio, Globe,
-  ParkingSquare, Satellite, BarChart2, BookOpen, Settings
+  ParkingSquare, Satellite, BarChart2, BookOpen, Settings,
+  ArrowDown, ArrowUp, Thermometer, HardDrive
 } from 'lucide-react';
 import SplashScreen from './SplashScreen.jsx';
 import './SplashScreen.css';
@@ -71,10 +72,31 @@ export default function App() {
   const [flowIndex, setFlowIndex] = useState(82);
   const [parking, setParking]     = useState({ total: 240, occupied: 178 });
   const [uptime, setUptime]       = useState(0); // seconds
+  const [sysMetrics, setSysMetrics] = useState({
+    down: "1.2 MB/s",
+    up: "420 KB/s",
+    cpu: 24,
+    ram: 4.1,
+    temp: 48
+  });
 
   /* Uptime counter */
   useEffect(() => {
     const t = setInterval(() => setUptime(s => s + 1), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  /* TrafficMonitor-style metrics simulation */
+  useEffect(() => {
+    const t = setInterval(() => {
+      setSysMetrics({
+        down: (Math.random() * 5 + 0.1).toFixed(1) + " MB/s",
+        up: (Math.random() * 800 + 50).toFixed(0) + " KB/s",
+        cpu: Math.floor(Math.random() * 30 + 15),
+        ram: (Math.random() * 2 + 3.5).toFixed(1),
+        temp: Math.floor(Math.random() * 15 + 40)
+      });
+    }, 3000);
     return () => clearInterval(t);
   }, []);
 
@@ -389,6 +411,66 @@ export default function App() {
                   </div>
                 ))}
                 {!data.violations.length && <div style={{textAlign:'center',color:'var(--brand-cyan)',padding:'1rem',fontSize:'0.8rem'}}>Scanning...</div>}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* TrafficMonitor-inspired System Monitor Panel */}
+        <div className="dashboard-grid" style={{marginTop:'1.25rem'}}>
+          <div className="glass-panel col-12">
+            <div className="panel-header">
+              <div className="panel-title">
+                <HardDrive size={18} color="var(--brand-cyan)"/>
+                System & Network Monitor
+                <span className="panel-meta">· Resource Health</span>
+              </div>
+              <div className="nav-pill its">
+                <Radio size={11}/> STABLE
+              </div>
+            </div>
+            
+            <div className="monitor-grid">
+              <div className="monitor-item">
+                <div className="monitor-label">Network Usage</div>
+                <div className="monitor-speed">
+                  <ArrowDown size={14} color="var(--brand-green)"/>
+                  <span className="monitor-value">{sysMetrics.down}</span>
+                  <span style={{color:'var(--text-dim)', margin:'0 0.5rem'}}>|</span>
+                  <ArrowUp size={14} color="var(--brand-orange)"/>
+                  <span className="monitor-value">{sysMetrics.up}</span>
+                </div>
+              </div>
+
+              <div className="monitor-item">
+                <div className="monitor-label">CPU Usage</div>
+                <div style={{display:'flex', alignItems:'center', gap:'1rem'}}>
+                  <span className="monitor-value">{sysMetrics.cpu}%</span>
+                  <div className="monitor-bar-bg" style={{flex:1}}>
+                    <div className="monitor-bar-fill" style={{width: sysMetrics.cpu + '%'}}/>
+                  </div>
+                </div>
+              </div>
+
+              <div className="monitor-item">
+                <div className="monitor-label">Memory Usage</div>
+                <div style={{display:'flex', alignItems:'center', gap:'1rem'}}>
+                  <span className="monitor-value">{sysMetrics.ram} GB</span>
+                  <div className="monitor-bar-bg" style={{flex:1}}>
+                    <div className="monitor-bar-fill" style={{width: (sysMetrics.ram / 8 * 100) + '%', background:'var(--brand-purple)'}}/>
+                  </div>
+                </div>
+              </div>
+
+              <div className="monitor-item">
+                <div className="monitor-label">Hardware Temp</div>
+                <div style={{display:'flex', alignItems:'center', gap:'1rem'}}>
+                  <Thermometer size={14} color="var(--brand-red)"/>
+                  <span className="monitor-value">{sysMetrics.temp}°C</span>
+                  <div className="monitor-bar-bg" style={{flex:1}}>
+                    <div className="monitor-bar-fill" style={{width: (sysMetrics.temp / 100 * 100) + '%', background:'var(--brand-red)'}}/>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

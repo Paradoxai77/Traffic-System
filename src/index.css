@@ -1600,6 +1600,80 @@ body::before {
 }
 
 /* ══════════════════════════════════════════
+   SYSTEM MONITOR (TRAFFIC MONITOR SKIN)
+══════════════════════════════════════════ */
+.monitor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+}
+
+.monitor-item {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.04);
+  border-radius: var(--radius-md);
+  padding: 1.2rem;
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+  transform-style: preserve-3d;
+}
+
+.monitor-item:hover {
+  background: rgba(0,240,255,0.04);
+  border-color: rgba(0,240,255,0.15);
+  transform: perspective(600px) rotateX(-2deg) translateY(-4px) translateZ(10px);
+}
+
+.monitor-label {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+}
+
+.monitor-value {
+  font-family: 'Orbitron', monospace;
+  font-size: 1.25rem;
+  color: var(--brand-cyan);
+  font-weight: 700;
+}
+
+.monitor-bar-bg {
+  height: 6px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 99px;
+  overflow: hidden;
+  position: relative;
+}
+
+.monitor-bar-fill {
+  height: 100%;
+  background: var(--brand-cyan);
+  border-radius: 99px;
+  transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 0 10px currentColor;
+}
+
+.monitor-speed {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .monitor-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  .monitor-item {
+    padding: 0.8rem 1rem;
+  }
+  .monitor-value {
+    font-size: 1.1rem;
+  }
+}
+/* ══════════════════════════════════════════
    NEW GLITCH AND ENTRANCE ANIMATIONS
 ══════════════════════════════════════════ */
 /* Staggered entrance for Hero Stats */
