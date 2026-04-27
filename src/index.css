@@ -1598,3 +1598,97 @@ body::before {
 .site-footer:hover {
   transform: perspective(800px) rotateX(-0.5deg);
 }
+
+/* ══════════════════════════════════════════
+   NEW GLITCH AND ENTRANCE ANIMATIONS
+══════════════════════════════════════════ */
+/* Staggered entrance for Hero Stats */
+.hero-stat {
+  animation: heroStatEntrance 0.7s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.hero-stat:nth-child(1) { animation-delay: 0.1s; }
+.hero-stat:nth-child(2) { animation-delay: 0.15s; }
+.hero-stat:nth-child(3) { animation-delay: 0.2s; }
+.hero-stat:nth-child(4) { animation-delay: 0.25s; }
+.hero-stat:nth-child(5) { animation-delay: 0.3s; }
+.hero-stat:nth-child(6) { animation-delay: 0.35s; }
+.hero-stat:nth-child(7) { animation-delay: 0.4s; }
+
+@keyframes heroStatEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Cyber Glitch Effect on Title Hover */
+.hero-title:hover {
+  animation: cyberGlitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+}
+
+@keyframes cyberGlitch {
+  0% { transform: translate(0) }
+  20% { transform: translate(-2px, 2px) }
+  40% { transform: translate(-2px, -2px) }
+  60% { transform: translate(2px, 2px) }
+  80% { transform: translate(2px, -2px) }
+  100% { transform: translate(0) }
+}
+
+/* Nav Pill Shimmer Effect */
+.nav-pill {
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-pill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transform: skewX(-20deg);
+  animation: navPillShimmer 3s infinite;
+}
+
+@keyframes navPillShimmer {
+  0% { left: -100%; }
+  20% { left: 200%; }
+  100% { left: 200%; }
+}
+
+/* Intersection Data Scanning Effect */
+.int-metrics {
+  position: relative;
+}
+.int-metrics::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--brand-cyan);
+  opacity: 0;
+  box-shadow: 0 0 10px var(--brand-cyan);
+  pointer-events: none;
+  z-index: 10;
+}
+.intersection-item:hover .int-metrics::before {
+  animation: scanDataLine 1s ease-in-out infinite alternate;
+}
+
+@keyframes scanDataLine {
+  0% { top: 0%; opacity: 0; }
+  10% { opacity: 0.5; }
+  90% { opacity: 0.5; }
+  100% { top: 100%; opacity: 0; }
+}

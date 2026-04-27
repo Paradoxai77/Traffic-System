@@ -153,7 +153,7 @@ export default function App() {
               id:'V-'+Math.floor(Math.random()*9999), type:vt.type,
               plate: vt.vehicle==="Human" ? "PED-LINK" : genPlate(),
               time:ts, confidence:vt.conf(), speed:spd+" km/h",
-              vehicle:vt.vehicle, fine:"$"+fine,
+              vehicle:vt.vehicle, fine:"₹"+fine,
               location: newInts[Math.floor(Math.random()*newInts.length)].name,
             });
             if (newViols.length>5) newViols.pop();
