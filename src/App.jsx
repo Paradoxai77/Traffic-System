@@ -685,7 +685,106 @@ export default function App() {
         </div>
       </section>
 
-      {/* ═══ FOOTER ═══ */}
+      {/* ═══ SECTION: PUNE CITY INFO ═══ */}
+      <section className="section-wrap">
+        <div className="section-heading">
+          <div className="section-heading-icon"><Map size={16}/></div>
+          <span className="section-heading-label">Pune Smart City · Jurisdiction & Enforcement Info</span>
+          <div className="section-heading-line"/>
+        </div>
+
+        <div className="dashboard-grid">
+          {/* Jurisdiction Card */}
+          <div className="glass-panel col-4">
+            <div className="panel-header">
+              <div className="panel-title">
+                <Map size={18} color="var(--brand-cyan)"/>
+                Pune Jurisdiction
+              </div>
+              <span style={{fontSize:'0.68rem',color:'var(--brand-green)',fontWeight:700}}>MH-12 · ACTIVE</span>
+            </div>
+            <div style={{display:'flex',flexDirection:'column',gap:'0.75rem',padding:'0.5rem 0'}}>
+              {[
+                { label:'City', val:'Pune, Maharashtra, India' },
+                { label:'RTO Code', val:'MH-12 (Pune)' },
+                { label:'Authority', val:'Motor Vehicles Act 1988' },
+                { label:'CMVR Rule', val:'Rule 50 — HSRP Compliance' },
+                { label:'Geofence Radius', val:'500 m from Command Centre' },
+                { label:'Centre Coordinates', val:'18.5204°N, 73.8567°E' },
+                { label:'IPC Sections', val:'467 / 471 / 473 (Plate Forgery)' },
+                { label:'Repeat Offender Fine', val:'₹10,000 (within 30 days)' },
+              ].map((r,i) => (
+                <div key={i} style={{display:'flex',justifyContent:'space-between',borderBottom:'1px solid rgba(255,255,255,0.05)',paddingBottom:'0.5rem'}}>
+                  <span style={{color:'var(--text-muted)',fontSize:'0.78rem'}}>{r.label}</span>
+                  <span style={{color:'var(--brand-cyan)',fontSize:'0.78rem',fontWeight:600,textAlign:'right',maxWidth:'60%'}}>{r.val}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Active Enforcement Nodes */}
+          <div className="glass-panel col-4">
+            <div className="panel-header">
+              <div className="panel-title">
+                <Cpu size={18} color="var(--brand-green)"/>
+                Active Enforcement Nodes
+              </div>
+              <span style={{fontSize:'0.68rem',background:'rgba(0,255,136,0.1)',color:'var(--brand-green)',padding:'0.2rem 0.5rem',borderRadius:'6px',fontWeight:700}}>4 ONLINE</span>
+            </div>
+            <div style={{display:'flex',flexDirection:'column',gap:'0.6rem',padding:'0.5rem 0'}}>
+              {[
+                { name:'Shaniwar Wada', id:'ATMS-PUNE-01', zone:'Heritage Zone · High Footfall', signals:8 },
+                { name:'Koregaon Park', id:'ATMS-PUNE-02', zone:'Commercial · CCTV Dense', signals:12 },
+                { name:'Hinjewadi Phase 1', id:'ATMS-PUNE-03', zone:'IT Corridor · Peak Hours', signals:16 },
+                { name:'Swargate', id:'ATMS-PUNE-04', zone:'Transport Hub · Bus Terminal', signals:14 },
+              ].map((n,i) => (
+                <div key={i} style={{background:'rgba(0,255,136,0.04)',border:'1px solid rgba(0,255,136,0.1)',borderRadius:'8px',padding:'0.6rem 0.8rem'}}>
+                  <div style={{display:'flex',justifyContent:'space-between',marginBottom:'2px'}}>
+                    <span style={{fontWeight:700,fontSize:'0.82rem',color:'#fff'}}>{n.name}</span>
+                    <span style={{fontSize:'0.68rem',color:'var(--brand-green)',fontWeight:600}}>{n.id}</span>
+                  </div>
+                  <div style={{display:'flex',justifyContent:'space-between'}}>
+                    <span style={{fontSize:'0.68rem',color:'var(--text-dim)'}}>{n.zone}</span>
+                    <span style={{fontSize:'0.68rem',color:'var(--text-muted)'}}>{n.signals} signals</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Violation Codes */}
+          <div className="glass-panel col-4">
+            <div className="panel-header">
+              <div className="panel-title">
+                <ShieldAlert size={18} color="var(--brand-red)"/>
+                Pune Violation Codes
+              </div>
+              <span style={{fontSize:'0.68rem',color:'var(--brand-red)',fontWeight:700}}>CMVR / MVA 1988</span>
+            </div>
+            <div style={{display:'flex',flexDirection:'column',gap:'0.5rem',padding:'0.5rem 0'}}>
+              {[
+                { code:'VP-01', desc:'No Number Plate', fine:'₹500+', color:'var(--brand-red)' },
+                { code:'VP-02', desc:'Non-HSRP Plate', fine:'₹5,000', color:'var(--brand-yellow)' },
+                { code:'VP-09', desc:'Fancy/Modified Plate', fine:'₹500', color:'var(--brand-orange)' },
+                { code:'V-02', desc:'Red Light Jump', fine:'₹250', color:'var(--brand-red)' },
+                { code:'V-03', desc:'Speed Limit Violation', fine:'₹150–₹2,000', color:'var(--brand-orange)' },
+                { code:'V-09', desc:'Wrong Way Driving', fine:'₹500', color:'var(--brand-red)' },
+                { code:'IPC-467', desc:'Cloned Plate (Forgery)', fine:'Criminal Charge', color:'#ff2a55' },
+                { code:'EVP', desc:'Emergency Vehicle Exempt', fine:'No Challan', color:'var(--brand-green)' },
+              ].map((v,i) => (
+                <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',borderBottom:'1px solid rgba(255,255,255,0.04)',paddingBottom:'0.4rem'}}>
+                  <div>
+                    <span style={{fontFamily:'Orbitron,monospace',fontSize:'0.72rem',color:v.color,fontWeight:700,marginRight:'0.5rem'}}>{v.code}</span>
+                    <span style={{fontSize:'0.75rem',color:'var(--text-dim)'}}>{v.desc}</span>
+                  </div>
+                  <span style={{fontSize:'0.72rem',color:v.color,fontWeight:600,whiteSpace:'nowrap'}}>{v.fine}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       <footer className="site-footer">
         <div className="footer-brand"><span>RUBY</span> TRAFFIC AI · Smart City Command Centre · 2026</div>
         <div style={{display:'flex',gap:'1rem',alignItems:'center'}}>
