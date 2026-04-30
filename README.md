@@ -74,6 +74,27 @@
 </tr>
 </table>
 
+
+---
+
+## 🏛️ Jurisdiction & Enforcement Protocols
+
+Ruby Traffic AI is specifically calibrated for the **Pune, Maharashtra (MH-12)** jurisdiction, integrating strict legal and geographic frameworks directly into its decision engine.
+
+### 📍 Pune Smart City Deployment
+- **Geofencing:** Active enforcement within a 500-meter radius of the Pune Command Center (Lat: `18.5204`, Lng: `73.8567`).
+- **Nodes Monitored:** Shaniwar Wada, Koregaon Park, Hinjewadi Phase 1, Swargate.
+- **Traffic Modeling:** Adapts to Pune's unique density patterns and peak-hour vehicle flow.
+
+### 📜 System Enforcement Modules
+The platform operates on a rigid 3-module framework designed for Zero-Tolerance accuracy:
+
+*   **Module 1: Boundary & Core Challan Engine:** Validates Haversine distance, timestamp integrity, and AI confidence thresholds (>98% plate, >95% violation) before generating a valid challan.
+*   **Module 2: Plate Identification & HSRP:** Scans for 10-digit HSRP laser barcodes. Automatically flags non-compliant plates (VP-02) and cloned plates (IPC 467/471) for human verification.
+*   **Module 3: Maharashtra Operations:** Enforces localized rules such as out-of-state immunity for certain HSRP checks and elevated baseline fines (₹10,000) for repeat offenders within 30 days.
+
+> **Note:** The platform includes an interactive **Evidence Capture** module for Non-HSRP plates, allowing officers to verify AI-highlighted missing barcodes before issuing final challans.
+
 ---
 
 ## 🏗️ Architecture
