@@ -139,17 +139,25 @@ cd Traffic-System
 npm install
 ```
 
-### 2️⃣ Start the Backend (Optional — live data mode)
+### 2️⃣ Start the Backend
 
 ```bash
 cd backend
-pip install -r requirements.txt
+pip install flask flask-cors
 python app.py
 ```
 
-> 💡 If no backend is running, the dashboard automatically falls back to a **built-in Edge AI sandbox simulation** — no setup needed!
+### 3️⃣ Start the Pune Edge AI Simulation
 
-### 3️⃣ Launch the Dashboard
+```bash
+cd edge
+pip install requests
+python sim.py
+```
+
+> 💡 The Edge AI node simulates **real-time Pune traffic** — generating ANPR events, HSRP violations, and anomaly alerts every 5 seconds. If no backend is running, the dashboard automatically falls back to a built-in sandbox.
+
+### 4️⃣ Launch the Dashboard
 
 ```bash
 npm run dev
@@ -181,19 +189,23 @@ Open your browser at **`http://localhost:5173`** 🎉
 ```
 Traffic-System/
 ├── 📁 src/
-│   ├── App.jsx          # Main dashboard component
+│   ├── App.jsx          # Main dashboard + RulesView component
 │   ├── App.css          # Cyberpunk component styles
 │   ├── index.css        # Global CSS design system
 │   └── main.jsx         # React entry point
 ├── 📁 backend/
-│   └── app.py           # Flask REST API server
+│   └── app.py           # Flask REST API — stores violations, alerts & telemetry
+├── 📁 edge/
+│   └── sim.py           # Pune Edge AI node — Challan Engine + ANPR simulation
 ├── 📁 public/
-│   └── cctv.png         # CCTV feed asset
+│   ├── cctv.png         # CCTV feed asset
+│   ├── hsrp_plate.png   # Compliant HSRP plate sample
+│   └── non_hsrp_plate.png # Non-HSRP evidence capture asset
 ├── 📁 .github/
 │   └── workflows/
 │       └── deploy.yml   # GitHub Actions CI/CD
 ├── index.html           # HTML entry point
-├── vite.config.js       # Vite configuration
+├── vite.config.js       # Vite config (base: /Traffic-System/)
 └── package.json         # Project manifest
 ```
 
@@ -219,23 +231,28 @@ on:
 
 | Panel | Description |
 |---|---|
-| **KPI Cards** | Total tracked vehicles, avg flow speed, violations logged, critical alerts |
-| **Congestion Analytics** | Real-time area chart with 20-point rolling history and CO₂ savings |
-| **CCTV AI Feed** | Live camera overlay with ANPR bounding boxes and violation badges |
-| **Node Topology** | Intersection-by-intersection density, wait times, and traffic signal status |
-| **Anomaly Incident Log** | AI-detected events with model confidence and automated action taken |
+| **KPI Cards** | Total vehicles scanned, avg flow speed, active violations, critical alerts |
+| **Congestion Analytics** | Real-time area chart with rolling history, CO₂ savings & Pune weather state |
+| **Live CCTV AI Feed** | Simulated camera overlay with ANPR bounding boxes, confidence % and violation badges |
+| **Node Topology** | Shaniwar Wada, Koregaon Park, Hinjewadi Ph.1, Swargate — live density, wait times, signal state |
+| **ANPR Violation Log** | Timestamped challans with plate, vehicle type, fine amount, and evidence capture for Non-HSRP |
+| **Anomaly Incident Log** | AI-flagged threats (cloned plates, BRT intrusions, stolen vehicles) with confidence scores and action taken |
+| **System Enforcement Rules** | Full interactive reference for Module 1, 2 & Maharashtra Jurisdiction protocols |
 
 ---
 
-## 🤖 Edge AI Simulation
+## 🤖 Edge AI Simulation — Pune (`edge/sim.py`)
 
-When the Flask backend is offline, the frontend runs a **fully self-contained edge simulation**:
+The `sim.py` module is a standalone **Challan Enforcement Engine** that continuously simulates real Pune traffic conditions:
 
-- 📍 **4 smart intersections** — Main Station, 5th Avenue, Broadway, Park Row
-- 🔁 **Polling every 2 seconds** — density fluctuates ±7% per cycle
-- 🚨 **EVP events** auto-trigger when wait time exceeds 40s
-- 📸 **ANPR violations** generated probabilistically (20% chance per cycle)
-- 🌿 **CO₂ savings accumulate** at 2 kg per tick
+- 📍 **4 Pune Smart Nodes** — Shaniwar Wada, Koregaon Park, Hinjewadi Phase 1, Swargate
+- 🔁 **5-second telemetry cycle** — density, speed, and AI confidence updated per tick
+- ⚖️ **Haversine geofencing** — incidents outside the 500m Pune Command Center radius are auto-rejected
+- 🎯 **Strict confidence thresholds** — plate confidence >98%, violation confidence >95% required for challan issuance
+- 🚗 **4 Violation Types** — Signal Jump (V-02), Speeding (V-03), Wrong Way (V-09), Non-HSRP (VP-02)
+- 🚨 **Anomaly Engine** — 20% chance per cycle of flagging cloned plates (IPC 467), BRT intrusions, or stolen vehicle DB matches
+- 🚑 **Emergency Vehicle Exception** — 5% of incidents auto-exempt as EVP, no challan issued
+- 🌿 **CO₂ & environmental state** synced to backend on every tick
 
 ---
 
