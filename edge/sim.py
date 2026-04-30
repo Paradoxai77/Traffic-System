@@ -1,7 +1,59 @@
 import time
 import random
 import requests
+import math
+import uuid
 from datetime import datetime
+
+# --- SYSTEM ROLE: TRAFFIC CHALLAN ENFORCEMENT ENGINE ---
+class ChallanEnforcementEngine:
+    def __init__(self, center_lat, center_lng, radius_m):
+        self.center_lat = center_lat
+        self.center_lng = center_lng
+        self.radius_m = radius_m
+        
+    def haversine_distance(self, lat1, lon1, lat2, lon2):
+        R = 6371000 # Earth radius in meters
+        phi1, phi2 = math.radians(lat1), math.radians(lat2)
+        delta_phi = math.radians(lat2 - lat1)
+        delta_lambda = math.radians(lon2 - lon1)
+        a = math.sin(delta_phi/2.0)**2 + math.cos(phi1)*math.cos(phi2) * math.sin(delta_lambda/2.0)**2
+        return R * (2 * math.atan2(math.sqrt(a), math.sqrt(1-a)))
+
+    def evaluate_incident(self, data):
+        distance = self.haversine_distance(self.center_lat, self.center_lng, data['lat'], data['lng'])
+        if distance > self.radius_m:
+            return self._reject("Outside enforcement zone", distance)
+            
+        p_conf = data.get('plate_confidence', 0)
+        if p_conf < 0.98: return self._reject("Plate unreadable (< 98%)", distance, p_conf)
+            
+        v_conf = data.get('violation_confidence', 0)
+        if v_conf < 0.95: return self._reject("Violation below confidence threshold (< 95%)", distance, p_conf, v_conf)
+            
+        if data.get('is_emergency_vehicle', False):
+            return self._reject("Emergency vehicle exception", distance, p_conf, v_conf, exception=True)
+            
+        return {
+            "challan_issued": True,
+            "vehicle_plate": data['plate'],
+            "plate_confidence": p_conf,
+            "boundary_status": "INSIDE",
+            "vehicle_distance_from_center_m": round(distance, 2),
+            "enforcement_radius_m": self.radius_m,
+            "violation_code": data['code'],
+            "violation_description": data['description'],
+            "detection_confidence": v_conf,
+            "exception_applied": False,
+            "evidence_reference_id": str(uuid.uuid4()),
+            "timestamp_utc": datetime.utcnow().isoformat() + "Z",
+            "gps_coordinates": {"lat": data['lat'], "lng": data['lng']},
+            "challan_amount_inr": data['fine_amount'],
+            "audit_log": f"STEP 1: {round(distance,1)}m (INSIDE). STEP 2: Plate {p_conf*100}%. STEP 3: Time valid. STEP 4: {data['code']} {v_conf*100}%. STEP 5: No exceptions. STEP 6: Challan Issued."
+        }
+
+    def _reject(self, reason, distance, p_conf=None, v_conf=None, exception=False):
+        return {"challan_issued": False, "rejection_reason": reason, "audit_log": f"Rejected: {reason}"}
 
 # --- CONFIGURATION ---
 BACKEND_URL = "http://localhost:5000/api/traffic_update"
@@ -61,12 +113,15 @@ def simulate():
         {"id": "intersection-4", "name": "Swargate", "density": 65, "signal": "red", "wait_time": 60}
     ]
     
+    # Initialize the Enforcement Engine (Pune Center, 500m radius)
+    engine = ChallanEnforcementEngine(18.5204, 73.8567, 500)
+    
     history = []
     env_state = {
         "weather": "CLEAR", 
         "co2_emissions_saved_kg": 2450, 
         "avg_speed_kmh": 45,
-        "total_vehicles_scanned": 84200 # Starting with a realistic baseline
+        "total_vehicles_scanned": 0 # Starting from zero as requested
     }
 
     while True:
@@ -100,18 +155,63 @@ def simulate():
                 "timestamp": now_str
             }
 
-            # Handle high-confidence AI violation detection
-            if random.random() < 0.2: # Triggered by AI vision
-                v_type = random.choice(["Red Light Jump", "Wrong Way", "Illegal U-Turn"])
-                payload["violation"] = {
-                    "id": f"V-{random.randint(1000, 9999)}",
-                    "type": v_type,
+            # Handle AI violation detection & Enforcement Engine
+            if random.random() < 0.8: # 80% chance an incident is detected by camera
+                # Simulated telemetry
+                v_type = random.choice([("V-02", "SIGNAL VIOLATION (Red Light Jump)", 250), 
+                                        ("V-03", "SPEED LIMIT VIOLATION", 150), 
+                                        ("V-09", "WRONG SIDE / WRONG WAY DRIVING", 500),
+                                        ("VP-02", "NON-HSRP PLATE", 5000)])
+                
+                incident_data = {
+                    "lat": 18.5204 + random.uniform(-0.003, 0.003), # Smaller offset, stays inside 500m
+                    "lng": 73.8567 + random.uniform(-0.003, 0.003),
                     "plate": generate_number_plate(),
-                    "location": random.choice([i["name"] for i in intersections]),
-                    "time": now_str,
-                    "confidence": f"{random.uniform(96.0, 99.9):.1f}%",
-                    "source": "Edge AI Camera 04"
+                    "plate_confidence": random.uniform(0.975, 0.999), # Usually passes 0.98
+                    "violation_confidence": random.uniform(0.945, 0.999), # Usually passes 0.95
+                    "code": v_type[0],
+                    "description": v_type[1],
+                    "fine_amount": v_type[2],
+                    "is_emergency_vehicle": random.random() < 0.05 # 5% emergency
                 }
+                
+                # Engine Evaluation
+                decision = engine.evaluate_incident(incident_data)
+                print(f"[ENGINE LOG] {decision['audit_log']}")
+                
+                if decision["challan_issued"]:
+                    # Format for legacy dashboard compatibility
+                    payload["violation"] = {
+                        "id": decision["evidence_reference_id"][:8],
+                        "type": v_type[1].split(" (")[0], # E.g. "SIGNAL VIOLATION"
+                        "vehicle": random.choice(["Sedan", "SUV", "Motorcycle"]),
+                        "plate": decision["vehicle_plate"],
+                        "location": random.choice([i["name"] for i in intersections]),
+                        "time": now_str,
+                        "confidence": f"{decision['detection_confidence']*100:.1f}%",
+                        "fine": f"₹{decision['challan_amount_inr']}",
+                        "speed": f"{random.randint(45, 85)} km/h",
+                        "engine_data": decision # Raw engine JSON
+                    }
+
+                # Anomaly/Alert generation (Module 2: Clone Protocol etc.)
+                if random.random() < 0.2: # 20% chance of an anomaly
+                    alert_types = [
+                        {"msg": "CLONED PLATE DETECTED (IPC 467)", "sev": "critical", "act": "POLICE DISPATCHED"},
+                        {"msg": "UNAUTHORIZED VEHICLE IN BRT CORRIDOR", "sev": "warning", "act": "RECORDED & FLAGGED"},
+                        {"msg": "MULTI-LANE ZIGZAG DRIVING", "sev": "warning", "act": "TRACKING INITIATED"},
+                        {"msg": "SUSPECTED STOLEN VEHICLE (DB MATCH)", "sev": "critical", "act": "INTERSECTION LOCKDOWN"},
+                    ]
+                    chosen_alert = random.choice(alert_types)
+                    payload["alert"] = {
+                        "id": str(uuid.uuid4())[:8],
+                        "severity": chosen_alert["sev"],
+                        "model_conf": f"{random.uniform(92, 99.9):.1f}%",
+                        "time": now_str,
+                        "message": chosen_alert["msg"],
+                        "location": random.choice([i["name"] for i in intersections]),
+                        "action_taken": chosen_alert["act"]
+                    }
 
             # 4. SEND TO BACKEND
             try:

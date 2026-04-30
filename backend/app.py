@@ -10,10 +10,10 @@ CORS(app)
 # Global state to store the latest simulation data
 traffic_state = {
     "intersections": [
-        {"id": "intersection-1", "name": "Main Station", "density": 0, "signal": "green", "wait_time": 0, "emergency_override": False},
-        {"id": "intersection-2", "name": "5th Avenue", "density": 0, "signal": "red", "wait_time": 0, "emergency_override": False},
-        {"id": "intersection-3", "name": "Broadway", "density": 0, "signal": "green", "wait_time": 0, "emergency_override": False},
-        {"id": "intersection-4", "name": "Park Row", "density": 0, "signal": "red", "wait_time": 0, "emergency_override": False}
+        {"id": "intersection-1", "name": "Shaniwar Wada", "density": 0, "signal": "green", "wait_time": 0, "emergency_override": False},
+        {"id": "intersection-2", "name": "Koregaon Park", "density": 0, "signal": "red", "wait_time": 0, "emergency_override": False},
+        {"id": "intersection-3", "name": "Hinjewadi Phase 1", "density": 0, "signal": "green", "wait_time": 0, "emergency_override": False},
+        {"id": "intersection-4", "name": "Swargate", "density": 0, "signal": "red", "wait_time": 0, "emergency_override": False}
     ],
     "violations": [],
     "alerts": [],

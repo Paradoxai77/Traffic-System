@@ -6,7 +6,7 @@ import {
   Activity, Camera, ShieldAlert, Cpu, Video, Hexagon, Zap,
   ArrowUpRight, Map, CloudRain, Wind, Radio, Globe,
   ParkingSquare, Satellite, BarChart2, BookOpen, Settings,
-  ArrowDown, ArrowUp, Thermometer, HardDrive
+  ArrowDown, ArrowUp, Thermometer, HardDrive, Scale, ScrollText
 } from 'lucide-react';
 import SplashScreen from './SplashScreen.jsx';
 import './SplashScreen.css';
@@ -80,6 +80,8 @@ export default function App() {
     temp: 48
   });
 
+  const [evidenceModal, setEvidenceModal] = useState(null);
+
   /* Uptime counter */
   useEffect(() => {
     const t = setInterval(() => setUptime(s => s + 1), 1000);
@@ -128,10 +130,10 @@ export default function App() {
         /* Edge Sandbox — full ATM simulation */
         setData(prev => {
           const newInts = prev.intersections.length ? [...prev.intersections] : [
-            { id:"i-1", name:"Main Station",   density:45, signal:"green", wait_time:0,  emergency_override:false, vehicle_count:54, pedestrian_count:12, mode:"ADAPTIVE" },
-            { id:"i-2", name:"5th Avenue",     density:60, signal:"red",   wait_time:15, emergency_override:false, vehicle_count:72, pedestrian_count: 4, mode:"PROGRESSIVE" },
-            { id:"i-3", name:"Broadway",       density:30, signal:"green", wait_time:0,  emergency_override:false, vehicle_count:36, pedestrian_count: 8, mode:"ADAPTIVE" },
-            { id:"i-4", name:"Park Row",       density:80, signal:"red",   wait_time:45, emergency_override:true,  vehicle_count:96, pedestrian_count: 2, mode:"EVP OVERRIDE" },
+            { id:"i-1", name:"Shaniwar Wada",   density:45, signal:"green", wait_time:0,  emergency_override:false, vehicle_count:54, pedestrian_count:12, mode:"ADAPTIVE" },
+            { id:"i-2", name:"Koregaon Park",   density:60, signal:"red",   wait_time:15, emergency_override:false, vehicle_count:72, pedestrian_count: 4, mode:"PROGRESSIVE" },
+            { id:"i-3", name:"Hinjewadi Ph 1",  density:30, signal:"green", wait_time:0,  emergency_override:false, vehicle_count:36, pedestrian_count: 8, mode:"ADAPTIVE" },
+            { id:"i-4", name:"Swargate Junction", density:80, signal:"red",   wait_time:45, emergency_override:true,  vehicle_count:96, pedestrian_count: 2, mode:"EVP OVERRIDE" },
           ];
 
           const wx = prev.environment?.weather || "CLEAR";
@@ -177,6 +179,7 @@ export default function App() {
               time:ts, confidence:vt.conf(), speed:spd+" km/h",
               vehicle:vt.vehicle, fine:"₹"+fine,
               location: newInts[Math.floor(Math.random()*newInts.length)].name,
+              engine_data: { vehicle_distance_from_center_m: (Math.random()*400 + 50).toFixed(1) }
             });
             if (newViols.length>5) newViols.pop();
           }
@@ -241,12 +244,26 @@ export default function App() {
         <div className="nav-links">
           {[
             { id:'dashboard', label:'Dashboard', icon:<Activity size={14}/> },
+            { id:'rules', label:'Rules', icon:<Scale size={14}/> },
             { id:'analytics', label:'Analytics',  icon:<BarChart2 size={14}/> },
             { id:'surveillance', label:'Surveillance', icon:<Video size={14}/> },
             { id:'incidents', label:'Incidents', icon:<ShieldAlert size={14}/> },
             { id:'research', label:'Research', icon:<BookOpen size={14}/> },
           ].map(n => (
-            <div key={n.id} className={`nav-link ${activeNav===n.id?'active':''}`} onClick={()=>setActiveNav(n.id)}>
+            <div key={n.id} className={`nav-link ${activeNav===n.id?'active':''}`} onClick={() => {
+              if (n.id === 'rules') {
+                setActiveNav('rules');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              } else if (n.id === 'dashboard') {
+                setActiveNav('dashboard');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              } else {
+                setActiveNav('dashboard');
+                setTimeout(() => {
+                  document.getElementById('section-' + n.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+              }
+            }}>
               {n.icon} {n.label}
             </div>
           ))}
@@ -268,7 +285,9 @@ export default function App() {
           </div>
         </div>
       </nav>
-
+      
+      {activeNav === 'rules' ? <RulesView /> : (
+        <>
       {/* ═══ HERO SECTION ═══ */}
       <section className="hero-section">
         {/* 3D Background Image */}
@@ -284,7 +303,7 @@ export default function App() {
         <div className="hero-top">
           <div className="hero-title-group">
             <div className="hero-eyebrow">
-              <Satellite size={11}/> Smart City Command Centre · Active Traffic Management
+              <Satellite size={11}/> Smart City Command Centre · Monitoring Pune, Maharashtra
             </div>
             <h1 className="hero-title">Ruby Traffic AI</h1>
             <p className="hero-sub">
@@ -309,7 +328,12 @@ export default function App() {
           <div className="hero-stat">
             <div className="hero-stat-val purple">{avgDensity}%</div>
             <div className="hero-stat-label">Avg Density</div>
-            <div className="hero-stat-sub">Across {data.intersections.length||4} nodes</div>
+            <div className="hero-stat-sub">Across {data.intersections.length||4} Pune Signals</div>
+          </div>
+          <div className="hero-stat">
+            <div className="hero-stat-val">302</div>
+            <div className="hero-stat-label">City Signals</div>
+            <div className="hero-stat-sub">281 ATMS Active</div>
           </div>
           <div className="hero-stat">
             <div className="hero-stat-val">{data.environment?.avg_speed_kmh} <span style={{fontSize:'1rem'}}>km/h</span></div>
@@ -340,7 +364,7 @@ export default function App() {
       </section>
 
       {/* ═══ SECTION: ANALYTICS ═══ */}
-      <section className="section-wrap">
+      <section className="section-wrap" id="section-analytics">
         <div className="section-heading">
           <div className="section-heading-icon"><Activity size={16}/></div>
           <span className="section-heading-label">Real-Time Analytics</span>
@@ -381,7 +405,7 @@ export default function App() {
           </div>
 
           {/* CCTV Panel */}
-          <div className="glass-panel col-4 accent-purple" style={{padding:'0.8rem'}}>
+          <div className="glass-panel col-4 accent-purple" id="section-surveillance" style={{padding:'0.8rem'}}>
             <div className="panel-header" style={{padding:'0 0.5rem 0.8rem'}}>
               <div className="panel-title">
                 <Video size={16} color="var(--brand-purple)"/>
@@ -405,8 +429,16 @@ export default function App() {
                     <div className="badge-row">
                       <span className="cyber-badge badge-plate">{v.plate}</span>
                       <span className="cyber-badge badge-conf">{v.confidence}</span>
-                      <span className="cyber-badge" style={{background:'rgba(255,42,85,0.2)',color:'var(--brand-red)',border:'1px solid var(--brand-red)'}}>{v.fine}</span>
-                      <span className="cyber-badge" style={{background:'rgba(0,255,136,0.1)',color:'var(--brand-green)'}}>{v.speed}</span>
+                      <span className="cyber-badge" style={{background:'rgba(255,42,85,0.2)',color:'var(--brand-red)',border:'1px solid var(--brand-red)'}}>
+                        📍 {v.engine_data?.vehicle_distance_from_center_m || ((parseInt(v.id.replace(/\D/g,''))||123) % 300 + 50).toFixed(1)}m
+                      </span>
+                      {v.type === "NON-HSRP PLATE" ? (
+                        <span className="cyber-badge" style={{background:'rgba(255,184,0,0.15)',color:'var(--brand-yellow)',border:'1px solid var(--brand-yellow)', cursor:'pointer', display:'flex', alignItems:'center', gap:'4px'}} onClick={() => setEvidenceModal({plate: v.plate, image: 'non_hsrp_plate.png'})}>
+                          <Camera size={12}/> Capture Image
+                        </span>
+                      ) : (
+                        <span className="cyber-badge" style={{background:'rgba(0,255,136,0.1)',color:'var(--brand-green)'}}>{v.speed || "55 km/h"}</span>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -515,6 +547,7 @@ export default function App() {
                     {!int.emergency_override && int.mode && <span className="int-mode-tag">[{int.mode}]</span>}
                   </div>
                   <div className="int-metrics">
+                    <span>Signals <span className="int-metric-val">{int.id.includes('1') ? 8 : int.id.includes('2') ? 12 : int.id.includes('3') ? 16 : 14}</span></span>
                     <span>Density <span className="int-metric-val">{int.density}%</span></span>
                     <span>Wait <span className="int-metric-val">{int.wait_time}s</span></span>
                     <span>Vehicles <span className="int-metric-val">{int.vehicle_count}</span></span>
@@ -532,7 +565,7 @@ export default function App() {
           </div>
 
           {/* Anomaly Incident Log */}
-          <div className="glass-panel col-4 accent-red">
+          <div className="glass-panel col-4 accent-red" id="section-incidents">
             <div className="panel-header">
               <div className="panel-title">
                 <ShieldAlert size={18} color="var(--brand-red)"/>
@@ -567,7 +600,7 @@ export default function App() {
       </section>
 
       {/* ═══ SECTION: SMART CITY INTELLIGENCE ═══ */}
-      <section className="section-wrap">
+      <section className="section-wrap" id="section-research">
         <div className="section-heading">
           <div className="section-heading-icon"><Globe size={16}/></div>
           <span className="section-heading-label">Smart City Intelligence · ITS / ATM Research Data</span>
@@ -663,8 +696,118 @@ export default function App() {
           <span>Uptime: {fmtUptime(uptime)}</span>
         </div>
       </footer>
+      </>
+      )}
+
+      {/* Evidence Modal Overlay */}
+      {evidenceModal && (
+        <div style={{position:'fixed', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.85)', backdropFilter:'blur(10px)', zIndex:9999, display:'flex', alignItems:'center', justifyContent:'center'}}>
+          <div className="glass-panel" style={{padding:'2rem', maxWidth:'600px', width:'90%', border:'1px solid var(--brand-cyan)', position:'relative'}}>
+            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1.5rem'}}>
+              <div>
+                <h3 style={{color:'var(--brand-cyan)', fontFamily:'Orbitron', fontSize:'1.4rem'}}>Evidence Capture</h3>
+                <p style={{color:'var(--brand-yellow)', fontSize:'0.85rem', marginTop:'0.2rem'}}>Violation: NON-HSRP PLATE (VP-02) · Plate: {evidenceModal.plate}</p>
+              </div>
+              <button onClick={() => setEvidenceModal(null)} style={{background:'transparent', border:'none', color:'var(--text-muted)', cursor:'pointer', fontSize:'1.5rem'}}>&times;</button>
+            </div>
+            
+            <div style={{position:'relative', border:'2px solid rgba(0,240,255,0.3)', borderRadius:'8px', overflow:'hidden'}}>
+              <img src={`${import.meta.env.BASE_URL}${evidenceModal.image}`} alt="Evidence Plate" style={{width:'100%', height:'auto', display:'block'}} />
+              
+              {/* Overlay Annotations */}
+              <div style={{position:'absolute', top:'10%', left:'10%', border:'2px solid var(--brand-red)', width:'20%', height:'40%', background:'rgba(255,42,85,0.1)'}}></div>
+              <div style={{position:'absolute', top:'8%', left:'10%', color:'var(--brand-red)', fontSize:'0.75rem', fontWeight:'bold', background:'rgba(0,0,0,0.7)', padding:'2px 4px'}}>MISSING HSRP BARCODE</div>
+            </div>
+
+            <div style={{marginTop:'1.5rem', padding:'1rem', background:'rgba(0,240,255,0.05)', borderRadius:'8px', border:'1px dashed var(--brand-cyan)', display:'flex', justifyContent:'space-between'}}>
+              <div style={{color:'var(--text-dim)', fontSize:'0.8rem'}}>
+                <strong>Timestamp:</strong> {new Date().toISOString()}<br/>
+                <strong>Source Node:</strong> ATMS-PUNE-04<br/>
+                <strong>Status:</strong> Awaiting Officer Verification
+              </div>
+              <div style={{display:'flex', gap:'1rem', alignItems:'center'}}>
+                 <button style={{background:'var(--brand-red)', color:'#fff', border:'none', padding:'0.5rem 1rem', borderRadius:'4px', cursor:'pointer', fontWeight:600}} onClick={() => setEvidenceModal(null)}>REJECT</button>
+                 <button style={{background:'var(--brand-cyan)', color:'#000', border:'none', padding:'0.5rem 1rem', borderRadius:'4px', cursor:'pointer', fontWeight:600}} onClick={() => setEvidenceModal(null)}>ISSUE CHALLAN</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
     </>
   );
 }
+
+const RulesView = () => {
+  const sections = [
+    {
+      id: "m1",
+      title: "Module 1: Boundary & Core Challan Engine",
+      icon: <ShieldAlert size={20} />,
+      rules: [
+        { label: "Boundary Enforcement", desc: "Mandatory geodesic distance check (Haversine). GPS accuracy must be within ±15m." },
+        { label: "Evidence Threshold", desc: "License plate recognition ≥ 98% confidence. Violation detection ≥ 95% confidence." },
+        { label: "Zero Tolerance", desc: "No challans issued for false positives. Burden of proof is entirely on the system." },
+        { label: "Audit Integrity", desc: "Every decision must generate an immutable audit log and unique evidence UUID." }
+      ]
+    },
+    {
+      id: "m2",
+      title: "Module 2: Plate Identification & HSRP",
+      icon: <ScrollText size={20} />,
+      rules: [
+        { label: "Identification Priority", desc: "Scan 10-digit HSRP laser barcode first (99.5% conf). Fallback to OCR (98% conf)." },
+        { label: "HSRP Classification", desc: "Class 1: HSRP Compliant. Class 2: Old/Non-HSRP (VP-02). Class 7: Fancy (VP-09)." },
+        { label: "Clone Protocol (IPC 467/471)", desc: "Detected via DB mismatch or dual-location ping. Alert police control, issue NO challan." },
+        { label: "Temporary Plates", desc: "Red plates valid for 30 days. No plate (VP-01) requires on-site officer confirmation." }
+      ]
+    },
+    {
+      id: "m3",
+      title: "Operational Jurisdiction: Maharashtra",
+      icon: <Map size={20} />,
+      rules: [
+        { label: "Out-of-State Immunity", desc: "HSRP checks do not apply to non-MH vehicles. Universal violations only." },
+        { label: "Fuel Type Stickers", desc: "Daytime color check (Blue/Petrol, Orange/Diesel, Green/EV). No auto-challan." },
+        { label: "Repeat Offenders", desc: "Violations within 30 days trigger elevated fine amounts (₹10,000 baseline)." },
+        { label: "Document Verification", desc: "Expired Insurance/PUC/DL flagged for review only. No automatic issuance." }
+      ]
+    }
+  ];
+
+  return (
+    <div className="rules-view" style={{padding:'2.5rem', flex: 1, overflowY:'auto'}}>
+      <div style={{marginBottom:'2.5rem'}}>
+        <h2 style={{fontFamily:'Orbitron', color:'var(--brand-cyan)', fontSize:'1.8rem', marginBottom:'0.5rem'}}>System Enforcement Protocols</h2>
+        <p style={{color:'var(--text-muted)', fontSize:'0.9rem'}}>Legal Jurisdiction: Maharashtra Motor Vehicles Act 1988 · Rule 50 CMVR</p>
+      </div>
+
+      <div className="dashboard-grid">
+        {sections.map(s => (
+          <div key={s.id} className="glass-panel col-4">
+            <div className="panel-header">
+              <div className="panel-title" style={{color:'var(--brand-cyan)'}}>
+                {s.icon} {s.title}
+              </div>
+            </div>
+            <div style={{display:'flex', flexDirection:'column', gap:'1.5rem', marginTop:'1rem'}}>
+              {s.rules.map((r, i) => (
+                <div key={i}>
+                  <div style={{color:'var(--text-main)', fontWeight:600, fontSize:'0.85rem', marginBottom:'0.25rem', letterSpacing:'0.5px'}}>{r.label}</div>
+                  <div style={{color:'var(--text-muted)', fontSize:'0.8rem', lineHeight:1.5}}>{r.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{marginTop:'3rem', padding:'1.5rem', background:'rgba(255,42,85,0.05)', border:'1px solid rgba(255,42,85,0.2)', borderRadius:'12px', display:'flex', alignItems:'center', gap:'1rem'}}>
+        <ShieldAlert size={20} color="var(--brand-red)" />
+        <span style={{color:'var(--brand-red)', fontSize:'0.85rem', fontWeight:600, letterSpacing:'1px'}}>CONFIDENTIAL: Internal Enforcement Protocols — Law Enforcement Access Only</span>
+      </div>
+    </div>
+  );
+};
+
